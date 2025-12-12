@@ -412,6 +412,14 @@ const getOrderTypeText = (type: string, subtype: string) => {
   gap: 12px;
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.complaint-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .filter-section {
@@ -421,9 +429,11 @@ const getOrderTypeText = (type: string, subtype: string) => {
 }
 
 .complaints-section .complaint-card {
-  background: transparent;
+  background: #fff;
   border-radius: 12px;
-  padding: 12px;
+  padding: 12px 14px;
+  border: 1px solid #cfe8ff;
+  box-shadow: 0 4px 12px rgba(25, 137, 250, 0.16);
 }
 
 .complaint-header {
