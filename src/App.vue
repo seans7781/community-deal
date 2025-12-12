@@ -13,11 +13,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useUserStore } from '@/stores'
 import GlobalTabBar from '@/components/GlobalTabBar.vue'
 
 const route = useRoute()
-const userStore = useUserStore()
 
 // 计算是否显示TabBar（登录页不显示）
 const showTabBar = computed(() => {

@@ -124,14 +124,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
 
 const router = useRouter()
 const userStore = useUserStore()
 const workOrderStore = useWorkOrderStore()
 
 const chatStore = useChatStore()
-const unreadCount = ref(0)
 const complaintListRef = ref<HTMLElement | null>(null)
 const scrollTimer = ref<number | null>(null)
 

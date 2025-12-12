@@ -87,6 +87,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast } from 'vant'
+import type { UploaderBeforeRead } from 'vant/es/uploader/types'
 import { useUserStore, useWorkOrderStore } from '@/stores'
 import type { WorkOrder } from '@/stores'
 
@@ -122,8 +123,10 @@ const onTypeConfirm = ({ selectedOptions }: any) => {
   showTypePicker.value = false
 }
 
-const beforeRead = (file: File) => {
-  if (file.size > 5 * 1024 * 1024) {
+const beforeRead: UploaderBeforeRead = (file) => {
+  const f = Array.isArray(file) ? (file[0] as any) : (file as any)
+  const size = (f && (f.size as number)) || 0
+  if (size > 5 * 1024 * 1024) {
     showFailToast('图片大小不能超过5MB')
     return false
   }

@@ -103,16 +103,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { showDialog } from 'vant'
 import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
 
 const router = useRouter()
 const userStore = useUserStore()
 const workOrderStore = useWorkOrderStore()
 
 const chatStore = useChatStore()
-const unreadCount = ref(0)
 
 const adminNotices = computed(() => {
   return chatStore.getApprovedMessages()
@@ -167,16 +164,6 @@ const getOrderTypeText = (type: string, subtype: string) => {
   return `${typeMap[type as keyof typeof typeMap]} - ${subtype}`
 }
 
-const getStatusText = (status: string) => {
-  const statusMap = {
-    pending: '待审核',
-    approved: '审核通过',
-    rejected: '已驳回',
-    processing: '处理中',
-    completed: '已完成'
-  }
-  return statusMap[status as keyof typeof statusMap]
-}
 
 </script>
 

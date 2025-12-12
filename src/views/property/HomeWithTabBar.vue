@@ -58,7 +58,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { showDialog } from 'vant'
 import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
 
 const router = useRouter()

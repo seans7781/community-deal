@@ -92,6 +92,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showImagePreview, showSuccessToast, showFailToast } from 'vant'
+import type { UploaderBeforeRead } from 'vant/es/uploader/types'
 import { useWorkOrderStore } from '@/stores'
 import type { WorkOrder } from '@/stores'
 
@@ -146,8 +147,10 @@ const previewImage = (images: string[], startPosition: number) => {
   })
 }
 
-const beforeRead = (file: File) => {
-  if (file.size > 5 * 1024 * 1024) {
+const beforeRead: UploaderBeforeRead = (file) => {
+  const f = Array.isArray(file) ? (file[0] as any) : (file as any)
+  const size = (f && (f.size as number)) || 0
+  if (size > 5 * 1024 * 1024) {
     showFailToast('图片大小不能超过5MB')
     return false
   }

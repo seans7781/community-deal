@@ -69,7 +69,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWorkOrderStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
 
 const router = useRouter()
 const workOrderStore = useWorkOrderStore()

@@ -165,7 +165,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast, showDialog } from 'vant'
 import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
 
 const router = useRouter()
 const userStore = useUserStore()
