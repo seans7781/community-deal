@@ -2,39 +2,27 @@
   <div class="owner-home">
       <van-nav-bar
         title="小区家园通"
-        left-text="退出"
-        @click-left="onLogout"
       />
 
       <div class="owner-home-content">
-        <div class="announcement-bar">
-          <van-notice-bar
-            left-icon="volume-o"
-            :text="announcementText || '暂无公告'"
-            scrollable
-          />
+                <div class="welcome-section">
+          <h2>尊敬的{{ userStore.user?.name }}业主，欢迎回来。</h2>
+        </div>
+        <div class="announcement-bar" @click="goToAnnouncements">
+          <div class="announcement-content">
+            <van-icon name="volume-o" class="ann-icon" />
+            <div class="ann-swipe-wrap">
+              <van-swipe vertical :autoplay="3000" :show-indicators="false" class="announcement-swipe">
+                <van-swipe-item v-for="(item, idx) in announcementItemsToShow" :key="idx" class="announcement-item">
+                  {{ item }}
+                </van-swipe-item>
+              </van-swipe>
+            </div>
+          </div>
         </div>
 
-        <div class="welcome-section">
-          <h2>欢迎回来，{{ userStore.user?.name }}</h2>
-        </div>
+        <image-carousel />
 
-        <div class="function-cards">
-          <van-grid :column-num="2" :gutter="12">
-          <van-grid-item @click="goToRepair">
-            <div class="function-card repair-card">
-              <div class="card-icon">🔧</div>
-              <div class="card-title">我要报修</div>
-            </div>
-          </van-grid-item>
-          <van-grid-item @click="goToComplaint">
-            <div class="function-card complaint-card">
-              <div class="card-icon">⚠️</div>
-              <div class="card-title">我要投诉</div>
-            </div>
-          </van-grid-item>
-        </van-grid>
-        </div>
 
         <div class="complaints-section">
         <div class="section-header">
@@ -83,8 +71,8 @@
                 v-for="(img, idx) in order.images.slice(0, 3)"
                 :key="idx"
                 :src="img"
-                width="72"
-                height="72"
+                width="56"
+                height="56"
                 fit="cover"
               />
             </div>
@@ -93,6 +81,28 @@
             暂无投诉内容
           </div>
         </div>
+        </div>
+        <div class="suggestions-section">
+          <div class="section-header">
+            <h3>建议动态</h3>
+          </div>
+          <div class="suggestion-list" ref="suggestionListRef">
+            <div
+              v-for="s in suggestionsApproved"
+              :key="s.id"
+              class="suggestion-card"
+            >
+              <div class="suggestion-header">
+                <div class="suggestion-title">{{ s.title }}</div>
+                <div class="suggestion-time">{{ s.submitTime }}</div>
+              </div>
+              <div class="suggestion-content">{{ s.content }}</div>
+              <div class="suggestion-meta">来自：物业</div>
+            </div>
+            <div v-if="suggestionsApproved.length === 0" class="empty-orders">
+              暂无建议内容
+            </div>
+          </div>
         </div>
       </div>
       </div>
@@ -122,8 +132,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import ImageCarousel from '@/components/ImageCarousel.vue'
 import { useRouter } from 'vue-router'
-import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
+import { useUserStore, useWorkOrderStore, useChatStore, useSuggestionStore } from '@/stores'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -132,6 +143,8 @@ const workOrderStore = useWorkOrderStore()
 const chatStore = useChatStore()
 const complaintListRef = ref<HTMLElement | null>(null)
 const scrollTimer = ref<number | null>(null)
+const suggestionStore = useSuggestionStore()
+const suggestionListRef = ref<HTMLElement | null>(null)
 
 const adminNotices = computed(() => {
   return chatStore.getApprovedMessages()
@@ -139,10 +152,17 @@ const adminNotices = computed(() => {
     .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
 })
 
-const announcementText = computed(() => {
-  if (adminNotices.value.length === 0) return ''
-  return adminNotices.value.map(n => n.content).join(' ｜ ')
+const announcementItems = computed(() => {
+  return adminNotices.value.map(n => n.content)
 })
+
+const announcementItemsToShow = computed(() => {
+  return announcementItems.value.length > 0 ? announcementItems.value : ['暂无公告']
+})
+
+const goToAnnouncements = () => {
+  router.push('/announcements')
+}
 
 const complaintOrders = computed(() => {
   return workOrderStore.workOrders
@@ -161,6 +181,10 @@ const complaintOrdersFiltered = computed(() => {
   return complaintOrders.value
 })
 
+const suggestionsApproved = computed(() => {
+  return suggestionStore.getApprovedSuggestionsForRole('owner')
+})
+
 const myWorkOrders = computed(() => {
   return workOrderStore.getOwnerWorkOrders(userStore.user?.name || '')
     .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
@@ -172,18 +196,8 @@ const latestOrder = computed(() => {
 
 const showLatestOrderDialog = ref(false)
 
-const onLogout = () => {
-  userStore.logout()
-  router.push('/')
-}
+// 移除退出按钮
 
-const goToRepair = () => {
-  router.push('/owner/repair')
-}
-
-const goToComplaint = () => {
-  router.push('/owner/complaint')
-}
 
 const goToOrderDetail = (orderId: string) => {
   router.push(`/owner/order-detail/${orderId}`)
@@ -258,15 +272,24 @@ onUnmounted(() => {
 
 <style scoped>
 .owner-home {
-  height: calc(100vh - 50px);
+  min-height: calc(100vh - 50px);
   background: #f5f5f5;
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.owner-home::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .owner-home-content {
-  height: 100%;
-  display: grid;
-  grid-template-rows: 8% 10% 18% 64%;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .announcement-bar {
@@ -277,12 +300,35 @@ onUnmounted(() => {
   min-height: 40px;
   position: relative;
   z-index: 1;
+  cursor: pointer;
 }
 
-.announcement-bar .van-notice-bar {
+.announcement-bar .announcement-content {
   width: 100%;
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.ann-icon {
+  font-size: 16px;
+  color: #ff6b35;
+}
+
+.ann-swipe-wrap {
+  flex: 1;
+  overflow: hidden;
+}
+
+.announcement-swipe {
+  height: 24px;
+}
+
+.announcement-item {
+  line-height: 24px;
+  color: #333;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .welcome-section {
@@ -297,47 +343,20 @@ onUnmounted(() => {
   margin: 0;
 }
 
-.function-cards {
-  padding: 20px;
-  background: white;
-  margin-bottom: 10px;
-  height: 100%;
-  box-sizing: border-box;
-}
 
-.function-card {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  border-radius: 12px;
-  color: white;
-  font-weight: 500;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.function-cards .van-grid {
-  height: 100%;
-}
-
-.function-cards .van-grid-item__content {
-  height: 100%;
-}
-
-.repair-card {
-  background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
-}
-
-.complaint-card {
-  background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
-}
 
 .complaints-section {
   background: white;
   padding: 20px;
-  margin-bottom: 0;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestions-section {
+  background: white;
+  padding: 16px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
 }
@@ -354,11 +373,29 @@ onUnmounted(() => {
   gap: 12px;
   flex: 1;
   overflow-y: auto;
+  max-height: clamp(200px, 40vh, 420px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: clamp(160px, 30vh, 360px);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
 .complaint-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.suggestion-list::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
@@ -371,6 +408,20 @@ onUnmounted(() => {
   border: 1px solid #cfe8ff;
   box-shadow: 0 4px 12px rgba(25, 137, 250, 0.16);
 }
+
+.suggestions-section .suggestion-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid #cfe8ff;
+  box-shadow: 0 4px 12px rgba(25, 137, 250, 0.16);
+}
+
+.suggestion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.suggestion-title { font-size: 16px; color: #333; }
+.suggestion-time { font-size: 12px; color: #999; }
+.suggestion-content { font-size: 14px; color: #555; line-height: 1.6; margin-top: 4px; }
+.suggestion-meta { font-size: 12px; color: #666; margin-top: 6px; }
 
 .complaint-header {
   display: flex;

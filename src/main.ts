@@ -31,7 +31,9 @@ import {
   NoticeBar,
   Tabbar,
   TabbarItem,
-  Loading
+  Loading,
+  Swipe,
+  SwipeItem
 } from 'vant'
 
 // 导入store并添加示例数据
@@ -62,6 +64,8 @@ app.use(Uploader)
 app.use(Divider)
 app.use(Icon)
 app.use(NoticeBar)
+app.use(Swipe)
+app.use(SwipeItem)
 app.use(Tabbar)
 app.use(TabbarItem)
 app.use(Loading)

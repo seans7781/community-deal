@@ -1,10 +1,11 @@
 <template>
   <div class="app-container">
-    <!-- 页面内容 -->
-    <div class="main-content">
+    <!-- 页面内容：登录页不包裹 main-content -->
+    <div v-if="!isLogin" class="main-content">
       <router-view />
     </div>
-    
+    <router-view v-else />
+
     <!-- 全局底部TabBar -->
     <GlobalTabBar v-if="showTabBar" />
   </div>
@@ -17,10 +18,11 @@ import GlobalTabBar from '@/components/GlobalTabBar.vue'
 
 const route = useRoute()
 
-// 计算是否显示TabBar（登录页不显示）
 const showTabBar = computed(() => {
-  return route.path !== '/login' && route.path !== '/'
+  return !['/login', '/', '/register'].includes(route.path)
 })
+
+const isLogin = computed(() => route.path === '/login' || route.path === '/')
 </script>
 
 <style scoped>
@@ -32,6 +34,16 @@ const showTabBar = computed(() => {
 
 .main-content {
   flex: 1;
-  padding-bottom: 50px; /* 为TabBar留出空间 */
+  padding-bottom: 50px;
+  padding-top: 50px;
+}
+</style>
+<style>
+.van-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 }
 </style>

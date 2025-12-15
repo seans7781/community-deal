@@ -9,12 +9,18 @@ import AdminHome from '@/views/admin/HomeWithTabBar.vue'
 import AdminReviewList from '@/views/admin/ReviewList.vue'
 import AdminReview from '@/views/admin/Review.vue'
 import AdminReviewHistory from '@/views/admin/ReviewHistory.vue'
+import AdminCarouselManagement from '@/views/admin/CarouselManagement.vue'
+import AdminSuggestionReviewList from '@/views/admin/SuggestionReviewList.vue'
+import AdminSuggestionReviewHistory from '@/views/admin/SuggestionReviewHistory.vue'
 // 物业端路由
 import PropertyHome from '@/views/property/HomeWithTabBar.vue'
 import PropertyHandleList from '@/views/property/HandleList.vue'
 import PropertyHandle from '@/views/property/Handle.vue'
 import PropertyHandleHistory from '@/views/property/HandleHistory.vue'
 import Profile from '@/views/Profile.vue'
+import RegisterOwner from '@/views/RegisterOwner.vue'
+import AnnouncementList from '@/views/AnnouncementList.vue'
+import SuggestionForm from '@/views/SuggestionForm.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -28,6 +34,16 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterOwner
+    },
+    {
+      path: '/announcements',
+      name: 'announcements',
+      component: AnnouncementList
     },
     // 业主端路由
     {
@@ -72,6 +88,21 @@ const router = createRouter({
       name: 'admin-review-history',
       component: AdminReviewHistory
     },
+    {
+      path: '/admin/suggestion-review-list',
+      name: 'admin-suggestion-review-list',
+      component: AdminSuggestionReviewList
+    },
+    {
+      path: '/admin/suggestion-review-history',
+      name: 'admin-suggestion-review-history',
+      component: AdminSuggestionReviewHistory
+    },
+    {
+      path: '/admin/carousel-management',
+      name: 'admin-carousel-management',
+      component: AdminCarouselManagement
+    },
     // 物业端路由
     {
       path: '/property/home',
@@ -98,6 +129,12 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: Profile
+    },
+    // 建议提交
+    {
+      path: '/suggestion/new',
+      name: 'suggestion-new',
+      component: SuggestionForm
     }
   ]
 })

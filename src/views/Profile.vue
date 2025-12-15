@@ -17,7 +17,48 @@
       <van-cell title="账号信息" icon="user-o" is-link @click="showUserInfo" />
       <van-cell title="修改密码" icon="lock" is-link @click="showChangePassword" />
       <van-cell title="关于我们" icon="info-o" is-link @click="showAbout" />
+      <van-cell title="消息通知" icon="bell" is-link @click="goToMessages" :value="unreadCount > 0 ? unreadCount + '条未读' : ''" />
     </van-cell-group>
+
+    <div v-if="userInfo.role === 'owner'" class="quick-actions">
+      <div class="section-header">
+        <h3>快捷功能</h3>
+      </div>
+      <van-grid :column-num="3" :gutter="12">
+        <van-grid-item @click="goToRepairPage">
+          <div class="qa-card qa-repair">
+            <div class="qa-icon">🔧</div>
+            <div class="qa-title">报修</div>
+          </div>
+        </van-grid-item>
+        <van-grid-item @click="goToComplaintPage">
+          <div class="qa-card qa-complaint">
+            <div class="qa-icon">⚠️</div>
+            <div class="qa-title">投诉</div>
+          </div>
+        </van-grid-item>
+        <van-grid-item @click="goToSuggestionPage">
+          <div class="qa-card qa-suggestion">
+            <div class="qa-icon">💡</div>
+            <div class="qa-title">建议</div>
+          </div>
+        </van-grid-item>
+      </van-grid>
+    </div>
+
+    <div v-if="userInfo.role === 'property'" class="quick-actions">
+      <div class="section-header">
+        <h3>快捷功能</h3>
+      </div>
+      <van-grid :column-num="2" :gutter="12">
+        <van-grid-item @click="goToSuggestionPage">
+          <div class="qa-card qa-suggestion">
+            <div class="qa-icon">💡</div>
+            <div class="qa-title">建议</div>
+          </div>
+        </van-grid-item>
+      </van-grid>
+    </div>
 
     <div v-if="userInfo.role === 'owner'" class="owner-sections">
       <div class="work-order-section">
@@ -46,11 +87,7 @@
         </div>
       </div>
 
-      <div class="message-entry" @click="goToMessages">
-        <van-icon name="bell" />
-        <span>消息通知</span>
-        <div v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }}</div>
-      </div>
+      
 
       <van-dialog
         v-model:show="showLatestOrderDialog"
@@ -363,6 +400,10 @@ const getLatestOrderRemark = () => {
       return '工单状态更新'
   }
 }
+
+const goToRepairPage = () => { router.push('/owner/repair') }
+const goToComplaintPage = () => { router.push('/owner/complaint') }
+const goToSuggestionPage = () => { router.push('/suggestion/new') }
 </script>
 
 <style scoped>
@@ -563,33 +604,7 @@ const getLatestOrderRemark = () => {
   font-size: 14px;
 }
 
-.message-entry {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  background: white;
-  position: relative;
-}
 
-.message-entry .van-icon {
-  font-size: 20px;
-  margin-right: 10px;
-  color: #666;
-}
-
-.unread-badge {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #ee0a24;
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
-}
 
 .latest-order-content {
   padding: 20px;
@@ -623,4 +638,32 @@ const getLatestOrderRemark = () => {
 .password-form {
   padding: 10px;
 }
+
+.quick-actions {
+  background: white;
+  padding: 20px;
+  margin-top: 10px;
+}
+
+:deep(.van-grid-item__content) {
+  padding: 0;
+}
+
+.qa-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 90px;
+  border-radius: 12px;
+  color: white;
+}
+
+.qa-repair { background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%); }
+.qa-complaint { background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%); }
+.qa-suggestion { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+
+.qa-icon { font-size: 28px; margin-bottom: 6px; }
+.qa-title { font-size: 14px; }
 </style>

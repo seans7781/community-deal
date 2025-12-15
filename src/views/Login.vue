@@ -7,48 +7,19 @@
 
     <div class="login-form">
       <van-field
-        v-model="role"
-        readonly
-        clickable
-        label="角色"
-        placeholder="请选择角色"
-        @click="showRolePicker = true"
+        v-model="username"
+        label="手机号"
+        placeholder="请输入手机号"
+        type="tel"
       />
-      <van-popup v-model:show="showRolePicker" position="bottom">
-        <van-picker
-          :columns="roleColumns"
-          @confirm="onRoleConfirm"
-          @cancel="showRolePicker = false"
-        />
-      </van-popup>
-
-      <!-- 业主登录 - 口令输入 -->
-      <div v-if="role === '业主'">
-        <van-field
-          v-model="password"
-          type="digit"
-          label="6位数字口令"
-          placeholder="请输入6位数字口令"
-          maxlength="6"
-        />
-      </div>
-
-      <!-- 管理员/物业登录 - 账号密码 -->
-      <div v-else-if="role && role !== '业主'">
-        <van-field
-          v-model="username"
-          label="账号"
-          placeholder="请输入手机号或用户名"
-        />
-        <van-field
-          v-model="password"
-          type="password"
-          label="密码"
-          placeholder="请输入密码"
-        />
-        <div class="forgot-password" @click="onForgotPassword">
-          忘记密码？
-        </div>
+      <van-field
+        v-model="password"
+        type="password"
+        label="密码"
+        placeholder="请输入密码"
+      />
+      <div class="forgot-password" @click="onForgotPassword">
+        忘记密码？
       </div>
 
       <van-button
@@ -60,6 +31,24 @@
       >
         登录
       </van-button>
+
+      <van-button
+        type="success"
+        size="large"
+        class="register-btn"
+        @click="goToRegister"
+      >
+        注册业主账号
+      </van-button>
+    </div>
+
+    <div class="login-intro">
+我们为您和物业服务团队搭建了一座 24小时在线 的沟通桥梁。在这里，您的每一条声音都会被及时听见，每一件家园事都能得到高效跟进。
+    </div>
+
+    <div class="login-contact">
+      <p>物业24小时在线电话：<a href="tel:4000000000">400-000-0000</a></p>
+      <p>网页管理员QQ：123456789</p>
     </div>
 
     <div class="login-footer">
@@ -67,7 +56,7 @@
     </div>
 
     <!-- 错误提示 -->
-    <van-toast v-model:show="showError" type="fail" :message="errorMessage" />
+  <van-toast v-model:show="showError" type="fail" :message="errorMessage" />
   </div>
 </template>
 
@@ -80,77 +69,39 @@ import { useUserStore } from '@/stores'
 const router = useRouter()
 const userStore = useUserStore()
 
-const role = ref('')
 const username = ref('')
 const password = ref('')
-const showRolePicker = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
 
-const roleColumns = [{ text: '业主', value: '业主' }, { text: '管理员', value: '管理员' }, { text: '社区/物业', value: '社区/物业' }]
-
 const canLogin = computed(() => {
-  if (!role.value) return false
-  if (role.value === '业主') {
-    return password.value.length === 6
-  } else {
-    return username.value && password.value
-  }
+  return username.value && password.value
 })
 
-const onRoleConfirm = ({ selectedOptions }: any) => {
-  role.value = selectedOptions[0].value
-  showRolePicker.value = false
-  // 清空输入
-  username.value = ''
-  password.value = ''
-}
-
 const onLogin = () => {
-  // 模拟登录验证
-  if (role.value === '业主') {
-    // 验证6位数字口令
-    if (password.value === '123456') {
-      userStore.login({
-        id: 'owner001',
-        name: '张三',
-        role: 'owner',
-        phone: '13800138000'
-      })
-      router.push('/owner/home')
-    } else {
-      showToast('口令错误')
-    }
-  } else if (role.value === '管理员') {
-    // 验证管理员账号密码
-    if (username.value === 'admin' && password.value === 'admin123') {
-      userStore.login({
-        id: 'admin001',
-        name: '李管理员',
-        role: 'admin'
-      })
+  const ok = userStore.loginWithPassword(username.value, password.value)
+  if (ok) {
+    const role = userStore.user?.role
+    if (role === 'admin') {
       router.push('/admin/home')
-    } else {
-      showToast('账号密码错误')
-    }
-  } else if (role.value === '社区/物业') {
-    // 验证物业账号密码
-    if (username.value === 'property' && password.value === 'prop123') {
-      userStore.login({
-        id: 'property001',
-        name: '王物业',
-        role: 'property'
-      })
+    } else if (role === 'property') {
       router.push('/property/home')
     } else {
-      showToast('账号密码错误')
+      router.push('/owner/home')
     }
+  } else {
+    showToast('账号或密码错误')
   }
 }
 
 const onForgotPassword = () => {
   showToast('请联系系统管理员重置密码')
 }
+
+const goToRegister = () => {
+  router.push('/register')
+}
+
 </script>
 
 <style scoped>
@@ -192,6 +143,8 @@ const onForgotPassword = () => {
   border: none;
 }
 
+.register-btn { margin-top: 12px; }
+
 .forgot-password {
   text-align: right;
   color: #666;
@@ -205,4 +158,19 @@ const onForgotPassword = () => {
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
 }
+
+.login-intro {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.login-contact {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.login-contact a { color: inherit; text-decoration: underline; }
 </style>

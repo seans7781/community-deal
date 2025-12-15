@@ -6,6 +6,9 @@ export interface User {
   name: string
   role: 'owner' | 'admin' | 'property'
   phone?: string
+  building?: string
+  room?: string
+  password?: string
 }
 
 export interface WorkOrder {
@@ -41,9 +44,34 @@ export interface ChatMessage {
   reviewComment?: string
 }
 
+export interface Suggestion {
+  id: string
+  title: string
+  content: string
+  senderName: string
+  senderId: string
+  senderRole: 'owner' | 'property'
+  targetRole: 'owner' | 'property'
+  submitTime: string
+  status: 'pending' | 'approved' | 'rejected'
+  reviewTime?: string
+  reviewer?: string
+  reviewComment?: string
+}
+
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
   const isLoggedIn = ref(false)
+  const registeredOwners = ref<User[]>([])
+  const presetUsers = ref<User[]>([])
+
+  if (presetUsers.value.length === 0) {
+    presetUsers.value.push(
+      { id: 'admin-001', name: '管理员', role: 'admin', phone: '13800138001', password: 'admin123' },
+      { id: 'owner-demo-001', name: '张三', role: 'owner', phone: '13800138002', building: '1栋', room: '101', password: 'owner123' },
+      { id: 'property-001', name: '物业客服', role: 'property', phone: '13800138003', password: 'property123' }
+    )
+  }
 
   const login = (userData: User) => {
     user.value = userData
@@ -55,11 +83,47 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn.value = false
   }
 
+  const registerOwner = (data: { name: string; phone: string; building: string; room: string; password: string }) => {
+    const exists = registeredOwners.value.find(u => u.phone === data.phone)
+    if (exists) return null
+    const newUser: User = {
+      id: 'owner-' + Date.now().toString(),
+      name: data.name,
+      role: 'owner',
+      phone: data.phone,
+      building: data.building,
+      room: data.room,
+      password: data.password
+    }
+    registeredOwners.value.push(newUser)
+    return newUser
+  }
+
+  const getOwnerByPhone = (phone: string) => {
+    return registeredOwners.value.find(u => u.phone === phone) || null
+  }
+
+  const loginWithPassword = (phone: string, password: string) => {
+    const preset = presetUsers.value.find(u => u.phone === phone)
+    const found = preset || getOwnerByPhone(phone)
+    if (found && found.password === password) {
+      login(found)
+      return true
+    }
+    return false
+  }
+
   return {
     user,
     isLoggedIn,
     login,
-    logout
+    logout,
+    registeredOwners,
+    presetUsers,
+    registerOwner,
+    getOwnerByPhone,
+    
+    loginWithPassword
   }
 })
 
@@ -177,6 +241,8 @@ export const useWorkOrderStore = defineStore('workOrder', () => {
   }
 })
 
+export * from './carouselStore'
+
 export const useChatStore = defineStore('chat', () => {
   const messages = ref<ChatMessage[]>([])
 
@@ -264,5 +330,38 @@ export const useChatStore = defineStore('chat', () => {
     getApprovedMessages,
     getRejectedMessages,
     getMessagesBySender
+  }
+})
+
+export const useSuggestionStore = defineStore('suggestion', () => {
+  const suggestions = ref<Suggestion[]>([])
+
+  const addSuggestion = (s: Suggestion) => {
+    suggestions.value.push(s)
+  }
+
+  const updateSuggestion = (id: string, updates: Partial<Suggestion>) => {
+    const idx = suggestions.value.findIndex(it => it.id === id)
+    if (idx !== -1) {
+      suggestions.value[idx] = { ...suggestions.value[idx], ...updates }
+    }
+  }
+
+  const getPendingSuggestions = () => {
+    return suggestions.value.filter(s => s.status === 'pending')
+  }
+
+  const getApprovedSuggestionsForRole = (role: 'owner' | 'property') => {
+    return suggestions.value
+      .filter(s => s.status === 'approved' && s.targetRole === role)
+      .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
+  }
+
+  return {
+    suggestions,
+    addSuggestion,
+    updateSuggestion,
+    getPendingSuggestions,
+    getApprovedSuggestionsForRole
   }
 })

@@ -2,22 +2,28 @@
   <div class="owner-home">
     <van-nav-bar
       title="小区家园通"
-      left-text="退出"
-      @click-left="onLogout"
     />
 
     <div class="owner-home-content">
+            <div class="welcome-section">
+        <h2>尊敬的{{ userStore.user?.name }}业主，欢迎回来。</h2>
+      </div>
       <div class="announcement-bar">
-        <van-notice-bar
-          left-icon="volume-o"
-          :text="announcementText || '暂无公告'"
-          scrollable
-        />
+        <div class="announcement-content">
+          <van-icon name="volume-o" class="ann-icon" />
+          <div class="ann-swipe-wrap">
+            <van-swipe vertical :autoplay="3000" :show-indicators="false" class="announcement-swipe">
+              <van-swipe-item v-for="(item, idx) in announcementItemsToShow" :key="idx" class="announcement-item">
+                {{ item }}
+              </van-swipe-item>
+            </van-swipe>
+          </div>
+        </div>
       </div>
 
-      <div class="welcome-section">
-        <h2>欢迎回来，{{ userStore.user?.name }}</h2>
-      </div>
+      <image-carousel />
+
+
 
       <div class="function-cards">
         <van-grid :column-num="2" :gutter="16">
@@ -102,6 +108,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import ImageCarousel from '@/components/ImageCarousel.vue'
 import { useRouter } from 'vue-router'
 import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
 
@@ -117,9 +124,12 @@ const adminNotices = computed(() => {
     .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
 })
 
-const announcementText = computed(() => {
-  if (adminNotices.value.length === 0) return ''
-  return adminNotices.value.map(n => n.content).join(' ｜ ')
+const announcementItems = computed(() => {
+  return adminNotices.value.map(n => n.content)
+})
+
+const announcementItemsToShow = computed(() => {
+  return announcementItems.value.length > 0 ? announcementItems.value : ['暂无公告']
 })
 
 const complaintOrders = computed(() => {
@@ -139,10 +149,7 @@ const complaintOrdersFiltered = computed(() => {
   return complaintOrders.value
 })
 
-const onLogout = () => {
-  userStore.logout()
-  router.push('/')
-}
+// 移除退出按钮
 
 const goToRepair = () => {
   router.push('/owner/repair')
@@ -177,7 +184,7 @@ const getOrderTypeText = (type: string, subtype: string) => {
 .owner-home-content {
   height: 100%;
   display: grid;
-  grid-template-rows: 8% 10% 18% 64%;
+  grid-template-rows: 8% 10% 25% 18% 39%;
 }
 
 .announcement-bar {
@@ -190,10 +197,32 @@ const getOrderTypeText = (type: string, subtype: string) => {
   z-index: 1;
 }
 
-.announcement-bar .van-notice-bar {
+.announcement-bar .announcement-content {
   width: 100%;
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.ann-icon {
+  font-size: 16px;
+  color: #ff6b35;
+}
+
+.ann-swipe-wrap {
+  flex: 1;
+  overflow: hidden;
+}
+
+.announcement-swipe {
+  height: 24px;
+}
+
+.announcement-item {
+  line-height: 24px;
+  color: #333;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .welcome-section {
