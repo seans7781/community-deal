@@ -9,7 +9,7 @@
           <div class="item-meta">发布时间：{{ msg.submitTime }} · 发布者：{{ msg.senderName }}</div>
         </div>
         <div v-if="approvedAnnouncements.length === 0" class="empty-state">
-          <van-empty description="暂无公告" />
+          <van-empty description="暂无公告 " />
         </div>
       </van-list>
     </div>
