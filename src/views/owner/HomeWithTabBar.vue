@@ -108,7 +108,7 @@
       </div>
       <van-dialog
         v-model:show="showLatestOrderDialog"
-        title="最新工单处理情况"
+        title="最新工单处理情况11"
         confirm-button-text="查看详情"
         @confirm="goToLatestOrder"
       >

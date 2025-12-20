@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/community-deal/',
+  base: '/community-home/',
   define: {
     __VUE_OPTIONS_API__: true,
     __VUE_PROD_DEVTOOLS__: false,
@@ -18,5 +18,5 @@ export default defineConfig({
       '@': resolve(__dirname, 'src')
     }
   },
-  build: { outDir: 'docs' }
+  build: { outDir: 'dist' }
 })

@@ -1,0 +1,1491 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/CommunityHome/Login": {
+      "post": {
+        "summary": "登录",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernameOrPhone": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "usernameOrPhone",
+                  "password"
+                ]
+              },
+              "example": {
+                "usernameOrPhone": "admin",
+                "password": "admin@2025!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "token": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "userId",
+                        "name",
+                        "role",
+                        "token"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "登录成功",
+                  "data": {
+                    "userId": "6F2FCC9607C14F9EB267170B13D1C090",
+                    "name": "系统管理员",
+                    "role": "ADMIN",
+                    "token": "396b5d141eea4422910bf12ca190c9cf7c7cc1ec"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/OwnerRegister": {
+      "post": {
+        "summary": "业主注册",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "building": {
+                    "type": "string"
+                  },
+                  "roomNo": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "building",
+                  "roomNo",
+                  "phone",
+                  "name",
+                  "password"
+                ]
+              },
+              "example": {
+                "building": "1栋",
+                "roomNo": "102",
+                "phone": "19163816431",
+                "name": "李四",
+                "password": "Owner@2025!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": false,
+                  "msg": "手机号已注册"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AnnouncementCreate": {
+      "post": {
+        "summary": "管理员新增公告",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "c32db3d298a34eeea7a79abae7a5c265e9d1cd0a",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "content",
+                  "enabled"
+                ]
+              },
+              "example": {
+                "content": "本周末社区设备检修，请注意安全",
+                "enabled": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "新增成功",
+                  "data": {
+                    "id": "6fe0cef4a0aa48dc9d2b4f4fc06cd858"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AnnouncementUpdate": {
+      "post": {
+        "summary": "修改公告文本或启用状态",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "c32db3d298a34eeea7a79abae7a5c265e9d1cd0a",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "content",
+                  "enabled"
+                ]
+              },
+              "example": {
+                "id": "6fe0cef4a0aa48dc9d2b4f4fc06cd858",
+                "content": "检修时间调整至周日晚",
+                "enabled": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "编辑成功"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AnnouncementsAdmin": {
+      "get": {
+        "summary": "管理员获取公告列表",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "4cfbaec0d1e74470a8fd6e814dcf24db3f12a810",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Enabled": {
+                            "type": "boolean"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          },
+                          "CreatedByUserId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "Content",
+                          "Enabled",
+                          "CreatedAt",
+                          "UpdatedAt",
+                          "CreatedByUserId"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "b8288d81ac5d475f9eec730541a4a000",
+                      "Content": "本周末社区设备检修，请注意安全2222",
+                      "Enabled": true,
+                      "CreatedAt": "2025-12-19T16:08:38.067",
+                      "UpdatedAt": "2025-12-19T16:08:38.067",
+                      "CreatedByUserId": "6F2FCC9607C14F9EB267170B13D1C090"
+                    },
+                    {
+                      "Id": "b83234af9c254e75afb2e726b57701af",
+                      "Content": "本周末社区设备检修，请注意安全1111",
+                      "Enabled": true,
+                      "CreatedAt": "2025-12-19T16:08:30.307",
+                      "UpdatedAt": "2025-12-19T16:08:30.307",
+                      "CreatedByUserId": "6F2FCC9607C14F9EB267170B13D1C090"
+                    },
+                    {
+                      "Id": "6fe0cef4a0aa48dc9d2b4f4fc06cd858",
+                      "Content": "检修时间调整至周日晚",
+                      "Enabled": true,
+                      "CreatedAt": "2025-12-19T11:52:47.98",
+                      "UpdatedAt": "2025-12-19T12:00:06.377",
+                      "CreatedByUserId": "6F2FCC9607C14F9EB267170B13D1C090"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintReminders": {
+      "get": {
+        "summary": "首页获取未完成的投诉列表（业主端）",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintsTop100": {
+      "get": {
+        "summary": "首页大厅获取投诉列表（业主端）",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AnnouncementsPublic": {
+      "get": {
+        "summary": "首页大厅加载公告列表",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintSubmit": {
+      "post": {
+        "summary": "业主发起投诉或报修",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "8079c61474e541d7988904a2dfed3564dc6afaa8",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "building": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "contactPhone": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "building",
+                  "description",
+                  "images",
+                  "contactPhone"
+                ]
+              },
+              "example": {
+                "type": "噪音扰民",
+                "building": "3栋",
+                "description": "3栋101室深夜施工噪音，影响休息",
+                "images": [
+                  "https://example.com/1.jpg",
+                  "https://example.com/2.png"
+                ],
+                "contactPhone": "13900000000"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "complaintId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "complaintId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "投诉提交成功",
+                  "data": {
+                    "complaintId": "3612b94262e845409833336dfd1cde1d"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintMy": {
+      "get": {
+        "summary": "查看本人提交的投诉/报修列表",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "c3a1b08b8419480e84f8ffd4bfbfc03843796fde",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintIgnore": {
+      "post": {
+        "summary": "将指定投诉标记为已忽略，后续不再主动弹窗",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "<业主token>",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "complaintId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "complaintId"
+                ]
+              },
+              "example": {
+                "complaintId": "<投诉ID>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintApprove": {
+      "post": {
+        "summary": "管理员审批",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "fd8d9fd450ec4fd094df093b0563dacd3b4f5cfc",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "complaintId": {
+                    "type": "string"
+                  },
+                  "approved": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "complaintId",
+                  "approved",
+                  "reason"
+                ]
+              },
+              "example": {
+                "complaintId": "54de3d72c1a74c82b8d01167193e795d",
+                "approved": true,
+                "reason": "同意处理"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "审批完成"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintDetail": {
+      "get": {
+        "summary": "获取投诉/报修详情",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "54de3d72c1a74c82b8d01167193e795d",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "b73ed82e966a43ce9b0e820228c592246f3d98fb",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "complaint": {
+                          "type": "object",
+                          "properties": {
+                            "Id": {
+                              "type": "string"
+                            },
+                            "OwnerUserId": {
+                              "type": "string"
+                            },
+                            "Type": {
+                              "type": "string"
+                            },
+                            "RequestType": {
+                              "type": "string"
+                            },
+                            "Building": {
+                              "type": "string"
+                            },
+                            "Description": {
+                              "type": "string"
+                            },
+                            "Images": {
+                              "type": "string"
+                            },
+                            "ContactPhone": {
+                              "type": "string"
+                            },
+                            "Status": {
+                              "type": "string"
+                            },
+                            "CreatedAt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "Id",
+                            "OwnerUserId",
+                            "Type",
+                            "RequestType",
+                            "Building",
+                            "Description",
+                            "Images",
+                            "ContactPhone",
+                            "Status",
+                            "CreatedAt"
+                          ]
+                        },
+                        "approvals": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "Id": {
+                                "type": "string"
+                              },
+                              "ComplaintId": {
+                                "type": "string"
+                              },
+                              "AdminUserId": {
+                                "type": "string"
+                              },
+                              "Approved": {
+                                "type": "integer"
+                              },
+                              "Reason": {
+                                "type": "string"
+                              },
+                              "ReviewedAt": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "handling": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "Id": {
+                                "type": "string"
+                              },
+                              "ComplaintId": {
+                                "type": "string"
+                              },
+                              "PropertyUserId": {
+                                "type": "string"
+                              },
+                              "ResultDescription": {
+                                "type": "string"
+                              },
+                              "Photos": {
+                                "type": "string"
+                              },
+                              "PhotoList": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "HandledAt": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "complaint",
+                        "approvals",
+                        "handling"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": {
+                    "complaint": {
+                      "Id": "54de3d72c1a74c82b8d01167193e795d",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Type": "噪音扰民",
+                      "RequestType": "COMPLAINT",
+                      "Building": "3栋",
+                      "Description": "3栋101室深夜施工噪音，影响休息",
+                      "Images": "https://example.com/1.jpg,https://example.com/2.png",
+                      "ContactPhone": "13900000000",
+                      "Status": "Closed",
+                      "CreatedAt": "2025-12-19T09:21:41.263"
+                    },
+                    "approvals": [
+                      {
+                        "Id": "4f557f5f155645ebb0dcc86ca96990b4",
+                        "ComplaintId": "54de3d72c1a74c82b8d01167193e795d",
+                        "AdminUserId": "6F2FCC9607C14F9EB267170B13D1C090",
+                        "Approved": 1,
+                        "Reason": "同意处理",
+                        "ReviewedAt": "2025-12-19T15:32:34.93"
+                      }
+                    ],
+                    "handling": [
+                      {
+                        "Id": "97b75d4fb03c4c22b5e94eb6b119c61c",
+                        "ComplaintId": "54de3d72c1a74c82b8d01167193e795d",
+                        "PropertyUserId": "9f1ee89960f24d22a51409a061c322e8",
+                        "ResultDescription": "已完成维修，检查正常",
+                        "Photos": "https://example.com/handle1.jpg,https://example.com/handle2.png",
+                        "PhotoList": [
+                          "https://example.com/handle1.jpg",
+                          "https://example.com/handle2.png"
+                        ],
+                        "HandledAt": "2025-12-19T15:33:48.557"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintHandle": {
+      "post": {
+        "summary": "物业处理投诉/维修",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "111ef1c4313f40c7a810d35da1bd8cd5b5e8f573",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "complaintId": {
+                    "type": "string"
+                  },
+                  "resultDescription": {
+                    "type": "string"
+                  },
+                  "photos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "complaintId",
+                  "resultDescription",
+                  "photos"
+                ]
+              },
+              "example": {
+                "complaintId": "54de3d72c1a74c82b8d01167193e795d",
+                "resultDescription": "已完成维修，检查正常",
+                "photos": [
+                  "https://example.com/handle1.jpg",
+                  "https://example.com/handle2.png"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/BannerCreate": {
+      "post": {
+        "summary": "管理员创建轮播图",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "4cfbaec0d1e74470a8fd6e814dcf24db3f12a810",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "imageUrl": {
+                    "type": "string"
+                  },
+                  "linkUrl": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "sortOrder": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "title",
+                  "imageUrl",
+                  "linkUrl",
+                  "enabled",
+                  "sortOrder"
+                ]
+              },
+              "example": {
+                "title": "社区检修通知",
+                "imageUrl": "https://example.com/banner1.jpg",
+                "linkUrl": "https://example.com/detail",
+                "enabled": true,
+                "sortOrder": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "新增成功",
+                  "data": {
+                    "id": "013ea6eefe774fb0819fcc35dffab6a1"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/BannerUpdate": {
+      "post": {
+        "summary": "更新轮播标题、图片、链接、启用状态与排序",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "4cfbaec0d1e74470a8fd6e814dcf24db3f12a810",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "imageUrl": {
+                    "type": "string"
+                  },
+                  "linkUrl": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "sortOrder": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "title",
+                  "imageUrl",
+                  "linkUrl",
+                  "enabled",
+                  "sortOrder"
+                ]
+              },
+              "example": {
+                "id": "013ea6eefe774fb0819fcc35dffab6a1",
+                "title": "1115464",
+                "imageUrl": "https://example.com/banner2.webp",
+                "linkUrl": "https://example.com/detail",
+                "enabled": true,
+                "sortOrder": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "编辑成功"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/BannerDelete": {
+      "post": {
+        "summary": "删除轮播图",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "4cfbaec0d1e74470a8fd6e814dcf24db3f12a810",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "example": {
+                "id": "9b04f4027f6e438bae3cd4c29a3d79c1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "删除成功"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/UploadImage": {
+      "post": {
+        "summary": "图片上传（按分类存放，如投诉、维修类，处置类，轮播图类）",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "BANNER",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string",
+                    "example": "file://C:\\Users\\Administrator\\Downloads\\用户.png"
+                  }
+                }
+              },
+              "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}
