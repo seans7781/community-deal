@@ -82,16 +82,17 @@
           </div>
         </div>
         </div>
-        <div class="suggestions-section">
-          <div class="section-header">
-            <h3>建议动态</h3>
-          </div>
-          <div class="suggestion-list" ref="suggestionListRef">
-            <div
-              v-for="s in suggestionsApproved"
-              :key="s.id"
-              class="suggestion-card"
-            >
+<!-- <div class="suggestions-section">
+  <div class="section-header">
+    <h3>建议动态</h3>
+  </div>
+  <div class="suggestion-list" ref="suggestionListRef">
+    <div
+      v-for="s in suggestionsApprovedRemote"
+      :key="s.id"
+      class="suggestion-card"
+      @click="goToSuggestionDetail(s.id)"
+    >
               <div class="suggestion-header">
                 <div class="suggestion-title">{{ s.title }}</div>
                 <div class="suggestion-time">{{ s.submitTime }}</div>
@@ -99,31 +100,38 @@
               <div class="suggestion-content">{{ s.content }}</div>
               <div class="suggestion-meta">来自：物业</div>
             </div>
-            <div v-if="suggestionsApproved.length === 0" class="empty-orders">
-              暂无建议内容
-            </div>
-          </div>
-        </div>
+    <div v-if="suggestionsApprovedRemote.length === 0" class="empty-orders">
+      暂无建议内容
+    </div>
+  </div>
+</div> -->
       </div>
       </div>
       <van-dialog
         v-model:show="showLatestOrderDialog"
-        title="最新工单处理情况11"
+        title="最新工单处理情况"
         confirm-button-text="查看详情"
+        show-cancel-button
+        cancel-button-text="不再提醒"
         @confirm="goToLatestOrder"
+        @cancel="onIgnoreLatestOrder"
       >
-        <div class="latest-order-content" v-if="latestOrder">
+        <div class="latest-order-content" v-if="currentReminder">
           <div class="order-item">
             <span class="label">工单编号：</span>
-            <span class="value">{{ latestOrder.id }}</span>
+            <span class="value">{{ currentReminder.id }}</span>
           </div>
           <div class="order-item">
             <span class="label">处理阶段：</span>
-            <span class="value">{{ getStatusText(latestOrder.status) }}</span>
+            <span class="value">{{ getStatusText(currentReminder.status) }}</span>
           </div>
           <div class="order-item">
-            <span class="label">处理备注：</span>
-            <span class="value">{{ getLatestOrderRemark() }}</span>
+            <span class="label">问题描述：</span>
+            <span class="value">{{ currentReminder.description }}</span>
+          </div>
+          <div class="order-item">
+            <span class="label">提交时间：</span>
+            <span class="value">{{ currentReminder.submitTime }}</span>
           </div>
         </div>
       </van-dialog>
@@ -134,67 +142,76 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ImageCarousel from '@/components/ImageCarousel.vue'
 import { useRouter } from 'vue-router'
-import { useUserStore, useWorkOrderStore, useChatStore, useSuggestionStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { announcementsPublic, complaintsTop100, complaintReminders, complaintIgnore } from '@/services/communityHome'
 
 const router = useRouter()
 const userStore = useUserStore()
-const workOrderStore = useWorkOrderStore()
-
-const chatStore = useChatStore()
 const complaintListRef = ref<HTMLElement | null>(null)
 const scrollTimer = ref<number | null>(null)
-const suggestionStore = useSuggestionStore()
-const suggestionListRef = ref<HTMLElement | null>(null)
+ 
 
-const adminNotices = computed(() => {
-  return chatStore.getApprovedMessages()
-    .filter(m => m.senderRole === 'admin')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
-})
-
-const announcementItems = computed(() => {
-  return adminNotices.value.map(n => n.content)
+const announcementRemote = ref<any[]>([])
+onMounted(async () => {
+  const ann = await announcementsPublic()
+  const annData = (ann && (ann.data || ann)) as any
+  announcementRemote.value = Array.isArray(annData) ? annData : []
 })
 
 const announcementItemsToShow = computed(() => {
-  return announcementItems.value.length > 0 ? announcementItems.value : ['暂无公告']
+  const items = announcementRemote.value
+    .map((it: any) => it.Content || it.content)
+    .filter((x: any) => !!x)
+  return items.length > 0 ? items : ['暂无公告']
 })
 
 const goToAnnouncements = () => {
   router.push('/announcements')
 }
 
+const complaintRemote = ref<any[]>([])
+onMounted(async () => {
+  const comp = await complaintsTop100()
+  const compData = (comp && (comp.data || comp)) as any
+  complaintRemote.value = Array.isArray(compData) ? compData : []
+})
+
 const complaintOrders = computed(() => {
-  return workOrderStore.workOrders
-    .filter(order => order.type === 'complaint')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
+  return complaintRemote.value
+    .map((c: any) => ({
+      id: c.Id || c.id || String(Math.random()),
+      type: 'complaint',
+      subtype: c.Type || '',
+      building: c.Building || '',
+      description: c.Description || '',
+      images: ((c.Images || '') as string).split(',').filter(x => !!x),
+      status: c.Status || '',
+      submitTime: c.CreatedAt || '',
+    }))
+    .filter((o: any) => o.status !== 'PendingApproval')
+    .sort((a: any, b: any) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
 })
 
 const complaintFilter = ref<'all' | 'unprocessed' | 'processed'>('all')
 
 const complaintOrdersFiltered = computed(() => {
   if (complaintFilter.value === 'processed') {
-    return complaintOrders.value.filter(o => o.status === 'completed')
+    return complaintOrders.value.filter(o => o.status === 'Closed')
   } else if (complaintFilter.value === 'unprocessed') {
-    return complaintOrders.value.filter(o => o.status !== 'completed')
+    return complaintOrders.value.filter(o => o.status !== 'Closed')
   }
   return complaintOrders.value
 })
 
-const suggestionsApproved = computed(() => {
-  return suggestionStore.getApprovedSuggestionsForRole('owner')
-})
+ 
 
-const myWorkOrders = computed(() => {
-  return workOrderStore.getOwnerWorkOrders(userStore.user?.name || '')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
-})
+ 
 
-const latestOrder = computed(() => {
-  return myWorkOrders.value[0]
-})
+ 
 
 const showLatestOrderDialog = ref(false)
+const reminderQueue = ref<any[]>([])
+const currentReminder = ref<any | null>(null)
 
 // 移除退出按钮
 
@@ -204,9 +221,12 @@ const goToOrderDetail = (orderId: string) => {
 }
 
 const goToLatestOrder = () => {
-  if (latestOrder.value) {
-    router.push(`/owner/order-detail/${latestOrder.value.id}`)
+  const cur = currentReminder.value
+  showLatestOrderDialog.value = false
+  if (cur && cur.id) {
+    router.push(`/owner/order-detail/${cur.id}`)
   }
+  showNextReminder()
 }
 
 
@@ -219,38 +239,21 @@ const getOrderTypeText = (type: string, subtype: string) => {
 }
 
 const getStatusText = (status: string) => {
-  const statusMap = {
-    pending: '待审核',
-    approved: '审核通过',
-    rejected: '已驳回',
-    processing: '处理中',
-    completed: '已完成'
+  const statusMap: Record<string, string> = {
+    PendingApproval: '待审核',
+    Approved: '审核通过',
+    Rejected: '已驳回',
+    Handling: '处理中',
+    Closed: '已办结'
   }
-  return statusMap[status as keyof typeof statusMap]
+  return statusMap[status] || status
 }
 
-const getLatestOrderRemark = () => {
-  if (!latestOrder.value) return ''
-  switch (latestOrder.value.status) {
-    case 'approved':
-      return '您的工单已通过审核，正在安排处理'
-    case 'rejected':
-      return latestOrder.value.reviewComment || '工单被驳回，请查看详情'
-    case 'processing':
-      return '您的工单正在处理中'
-    case 'completed':
-      return '您的工单已处理完成'
-    default:
-      return '工单状态更新'
-  }
-}
+ 
+
+ 
 
 onMounted(() => {
-  if (latestOrder.value && latestOrder.value.status !== 'pending') {
-    setTimeout(() => {
-      showLatestOrderDialog.value = true
-    }, 1000)
-  }
   scrollTimer.value = window.setInterval(() => {
     const el = complaintListRef.value as HTMLElement
     if (!el) return
@@ -259,6 +262,28 @@ onMounted(() => {
       el.scrollTop = 0
     }
   }, 30)
+  ;(async () => {
+    try {
+      const res = await complaintReminders()
+      const data = (res && (res.data || res)) as any
+      const arr = Array.isArray(data) ? data : []
+      reminderQueue.value = arr
+        .filter((it: any) => {
+          const v = (it.ReminderIgnored ?? it.reminderIgnored ?? it.Ignored ?? 0)
+          return String(v) === '0' || v === 0 || v === false
+        })
+        .map((it: any) => ({
+          id: it.Id || it.id || '',
+          type: String(it.RequestType || '').toUpperCase() === 'REPAIR' ? 'repair' : 'complaint',
+          subtype: it.Type || '',
+          building: it.Building || '',
+          description: it.Description || '',
+          status: it.Status || '',
+          submitTime: it.CreatedAt || ''
+        }))
+      showNextReminder()
+    } catch {}
+  })()
 })
 
 onUnmounted(() => {
@@ -267,6 +292,28 @@ onUnmounted(() => {
     scrollTimer.value = null
   }
 })
+
+const showNextReminder = () => {
+  currentReminder.value = reminderQueue.value.shift() || null
+  showLatestOrderDialog.value = !!currentReminder.value
+}
+
+const onIgnoreLatestOrder = async () => {
+  const cur = currentReminder.value
+  showLatestOrderDialog.value = false
+  if (cur && cur.id) {
+    try {
+      const token = userStore.user?.token || ''
+      await complaintIgnore(token, cur.id)
+      try { localStorage.setItem('ignored-complaint-' + cur.id, '1') } catch {}
+    } catch {}
+  }
+  showNextReminder()
+}
+
+ 
+
+ 
 
 </script>
 
@@ -277,6 +324,7 @@ onUnmounted(() => {
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  padding-top: 50px;
 }
 
 .owner-home::-webkit-scrollbar {
@@ -290,6 +338,15 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+:deep(.van-nav-bar) {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: #fff;
 }
 
 .announcement-bar {

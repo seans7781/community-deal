@@ -59,24 +59,30 @@ const canSubmit = computed(() => {
   )
 })
 
-const onSubmit = () => {
+const onSubmit = async () => {
   if (!canSubmit.value) {
     showToast('请填写完整且一致的信息')
     return
   }
-  const created = userStore.registerOwner({
+  const created = await userStore.registerOwner({
     name: name.value,
     phone: phone.value,
     building: building.value,
     room: room.value,
     password: password.value
   })
-  if (!created) {
-    showToast('该手机号已注册')
+  const ok = created && (created.result === true)
+  if (!ok) {
+    const msg = (created && created.msg) || '注册失败'
+    showToast(msg)
     return
   }
-  userStore.login(created)
-  router.push('/owner/home')
+  const logged = await userStore.loginWithPassword(phone.value, password.value)
+  if (logged) {
+    router.push('/owner/home')
+  } else {
+    showToast('注册成功，请重新登录')
+  }
 }
 
 const onBack = () => { router.back() }

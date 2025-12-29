@@ -93,31 +93,41 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showImagePreview, showSuccessToast, showFailToast } from 'vant'
 import type { UploaderBeforeRead } from 'vant/es/uploader/types'
-import { useWorkOrderStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
+import { useUserStore } from '@/stores'
+import { complaintHandle, uploadImage, complaintDetail } from '@/services/communityHome'
 
 const route = useRoute()
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 
-const order = ref<WorkOrder | null>(null)
+const order = ref<any | null>(null)
 const handleDescription = ref('')
 const handlerName = ref('')
 const fileList = ref<any[]>([])
 const submitting = ref(false)
 
-onMounted(() => {
-  loadOrder()
-})
+onMounted(() => { loadOrder() })
 
-const loadOrder = () => {
+const loadOrder = async () => {
   const orderId = route.params.id as string
-  const foundOrder = workOrderStore.getWorkOrderById(orderId)
-  if (foundOrder) {
-    order.value = foundOrder
-  } else {
-    showFailToast('工单不存在')
+  const token = userStore.user?.token || ''
+  const res = await complaintDetail(token, orderId)
+  if (!res || res.result === false) {
+    showFailToast((res && res.msg) || '工单不存在')
     router.back()
+    return
+  }
+  const data = res.data || res
+  const c = data.complaint
+  order.value = {
+    id: c?.Id || orderId,
+    type: String(c?.RequestType || '').toUpperCase() === 'REPAIR' ? 'repair' : 'complaint',
+    subtype: c?.Type || '',
+    building: c?.Building || '',
+    description: c?.Description || '',
+    images: (c?.Images || '').split(',').filter((x: string) => !!x),
+    status: c?.Status || '',
+    submitTime: c?.CreatedAt || ''
   }
 }
 
@@ -167,25 +177,24 @@ const onSubmit = async () => {
   submitting.value = true
   
   try {
-    // 模拟提交处理结果
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // 更新工单状态
-    workOrderStore.updateWorkOrder(order.value.id, {
-      status: 'completed',
-      handleTime: new Date().toLocaleString('zh-CN'),
-      handler: handlerName.value,
-      handleDescription: handleDescription.value,
-      handleImages: fileList.value.map(file => file.url || file.content)
-    })
-    
-    showSuccessToast('处理完成，已同步至业主端')
-    
-    setTimeout(() => {
-      router.back()
-    }, 1500)
-  } catch (error) {
-    showFailToast('提交失败，请重试')
+    const token = userStore.user?.token || ''
+    const uploaded: string[] = []
+    for (const f of fileList.value) {
+      const fileObj = f.file as File
+      if (fileObj) {
+        const r = await uploadImage('HANDLING', fileObj)
+        const list = Array.isArray((r as any)?.data) ? (r as any).data : []
+        const url = list[0]?.url || ''
+        if (url) uploaded.push(url)
+      }
+    }
+    const res = await complaintHandle(token, { complaintId: order.value.id, resultDescription: handleDescription.value, photos: uploaded })
+    if (res && res.result === true) {
+      showSuccessToast('处理完成，已同步至业主端')
+      setTimeout(() => { router.back() }, 1200)
+    } else {
+      showFailToast((res && res.msg) || '提交失败')
+    }
   } finally {
     submitting.value = false
   }

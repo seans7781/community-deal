@@ -50,52 +50,44 @@
               </template>
             </van-cell>
             <van-cell
+              title="待处置建议列表"
+              :value="pendingSuggestCount > 0 ? pendingSuggestCount + '条待处置' : ''"
+              is-link
+              @click="goToSuggestAssigned"
+            />
+            <van-cell
+              title="已处置建议列表"
+              :value="handledSuggestCount > 0 ? handledSuggestCount + '条已处置' : ''"
+              is-link
+              @click="goToSuggestHandled"
+            />
+            <van-cell
               title="处理记录查询"
               is-link
               @click="goToHandleHistory"
             />
           </van-cell-group>
         </div>
-        <div class="suggestions-section">
-          <div class="section-header">
-            <h3>建议动态</h3>
-          </div>
-          <div class="suggestion-list">
-            <div v-for="s in suggestionsApproved" :key="s.id" class="suggestion-card">
-              <div class="suggestion-header">
-                <div class="suggestion-title">{{ s.title }}</div>
-                <div class="suggestion-time">{{ s.submitTime }}</div>
-              </div>
-              <div class="suggestion-content">{{ s.content }}</div>
-              <div class="suggestion-meta">来自：业主</div>
-            </div>
-            <div v-if="suggestionsApproved.length === 0" class="empty-state">
-              <van-empty description="暂无建议内容" />
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ImageCarousel from '@/components/ImageCarousel.vue'
 import { useRouter } from 'vue-router'
-import { useWorkOrderStore, useChatStore, useSuggestionStore } from '@/stores'
+import { useUserStore, useChatStore } from '@/stores'
+import { adminWorkorderStats, suggestAssignedProperty } from '@/services/communityHome'
 
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 const chatStore = useChatStore()
-const suggestionStore = useSuggestionStore()
 
-const pendingCount = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('approved').length
-})
-
-const completedCount = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('completed').length
-})
+const pendingCount = ref(0)
+const completedCount = ref(0)
+const pendingSuggestCount = ref(0)
+const handledSuggestCount = ref(0)
 
 const adminNotices = computed(() => {
   return chatStore.getApprovedMessages()
@@ -111,14 +103,36 @@ const announcementItemsToShow = computed(() => {
   return announcementItems.value.length > 0 ? announcementItems.value : ['暂无公告']
 })
 
-const suggestionsApproved = computed(() => {
-  return suggestionStore.getApprovedSuggestionsForRole('property')
+onMounted(() => {
+  ;(async () => {
+    const token = userStore.user?.token || ''
+    const statsRes = await adminWorkorderStats(token)
+    const stats = (statsRes && (statsRes.data || statsRes)) as any
+    const complaint = stats?.complaint || {}
+    const repair = stats?.repair || {}
+    pendingCount.value = (complaint?.propertyPending || 0) + (repair?.propertyPending || 0)
+    completedCount.value = (complaint?.propertyProcessed || 0) + (repair?.propertyProcessed || 0)
+
+    const sRes = await suggestAssignedProperty(token)
+    const sData = (sRes && (sRes.data || sRes)) as any
+    const sList = Array.isArray(sData) ? sData : []
+    pendingSuggestCount.value = sList.filter((x: any) => String(x.Status || '').toLowerCase() === 'approved').length
+    handledSuggestCount.value = sList.filter((x: any) => String(x.Status || '').toLowerCase() === 'resolved').length
+  })()
 })
 
 // 移除退出按钮
 
 const goToHandleList = () => {
   router.push('/property/handle-list')
+}
+
+const goToSuggestAssigned = () => {
+  router.push('/property/suggest-assigned')
+}
+
+const goToSuggestHandled = () => {
+  router.push('/property/suggest-handled')
 }
 
 const goToHandleHistory = () => {

@@ -18,9 +18,9 @@
         label="密码"
         placeholder="请输入密码"
       />
-      <div class="forgot-password" @click="onForgotPassword">
+      <!-- <div class="forgot-password" @click="onForgotPassword">
         忘记密码？
-      </div>
+      </div> -->
 
       <van-button
         type="primary"
@@ -78,9 +78,9 @@ const canLogin = computed(() => {
   return username.value && password.value
 })
 
-const onLogin = () => {
-  const ok = userStore.loginWithPassword(username.value, password.value)
-  if (ok) {
+const onLogin = async () => {
+  const ret: any = await userStore.loginWithPassword(username.value, password.value)
+  if (ret && ret.ok) {
     const role = userStore.user?.role
     if (role === 'admin') {
       router.push('/admin/home')
@@ -90,13 +90,12 @@ const onLogin = () => {
       router.push('/owner/home')
     }
   } else {
-    showToast('账号或密码错误')
+    const msg = (ret && ret.msg) || '账号或密码错误'
+    showToast(msg)
   }
 }
 
-const onForgotPassword = () => {
-  showToast('请联系系统管理员重置密码')
-}
+ 
 
 const goToRegister = () => {
   router.push('/register')

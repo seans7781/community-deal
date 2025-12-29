@@ -46,12 +46,12 @@
           is-link
           @click="goToReviewHistory"
         />
-        <van-cell
+        <!-- <van-cell
           title="账号管理"
           is-link
           @click="goToAccountManage"
         />
-      </van-cell-group>
+      </van-cell-group> -->
     </div>
   </div>
 </template>
@@ -91,9 +91,9 @@ const goToReviewHistory = () => {
   showDialog({ message: '审核记录查询功能开发中...' })
 }
 
-const goToAccountManage = () => {
-  showDialog({ message: '账号管理功能开发中...' })
-}
+// const goToAccountManage = () => {
+//   showDialog({ message: '账号管理功能开发中...' })
+// }
 </script>
 
 <style scoped>

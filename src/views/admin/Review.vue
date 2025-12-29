@@ -35,6 +35,23 @@
         </div>
       </van-cell-group>
 
+      <van-cell-group v-if="order.status === 'Closed' && (order.handlingTime || order.handlingNote || order.handlingResult || (order.handlingPhotos && order.handlingPhotos.length > 0))" title="物业处置">
+        <van-cell v-if="order.handlingTime" title="处置时间" :value="order.handlingTime" />
+        <van-cell v-if="order.handlingNote" title="处置说明" :value="order.handlingNote" />
+        <van-cell v-if="order.handlingResult" title="处置结果" :value="order.handlingResult" />
+        <div class="image-list" v-if="order.handlingPhotos && order.handlingPhotos.length > 0">
+          <van-image
+            v-for="(image, index) in order.handlingPhotos"
+            :key="index"
+            :src="image"
+            width="80"
+            height="80"
+            fit="cover"
+            @click="previewImage(order.handlingPhotos, index)"
+          />
+        </div>
+      </van-cell-group>
+
       <div class="review-section">
         <van-field
           v-model="reviewComment"
@@ -48,7 +65,7 @@
         />
       </div>
 
-      <div class="action-buttons" v-if="order && order.status === 'pending'">
+      <div class="action-buttons" v-if="order && order.status === 'PendingApproval'">
         <van-button 
           type="success" 
           size="large" 
@@ -78,14 +95,14 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showImagePreview, showSuccessToast, showFailToast } from 'vant'
-import { useWorkOrderStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
+import { useUserStore } from '@/stores'
+import { complaintApprove, complaintDetail } from '@/services/communityHome'
 
 const route = useRoute()
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 
-const order = ref<WorkOrder | null>(null)
+const order = ref<any | null>(null)
 const reviewComment = ref('')
 const approving = ref(false)
 const rejecting = ref(false)
@@ -94,15 +111,44 @@ onMounted(() => {
   loadOrder()
 })
 
-const loadOrder = () => {
+const loadOrder = async () => {
   const orderId = route.params.id as string
-  const foundOrder = workOrderStore.getWorkOrderById(orderId)
-  if (foundOrder) {
-    order.value = foundOrder
-  } else {
-    showFailToast('工单不存在')
+  const token = userStore.user?.token || ''
+  const res = await complaintDetail(token, orderId)
+  if (!res || res.result === false) {
+    showFailToast((res && res.msg) || '工单不存在')
     router.back()
+    return
   }
+  const data = res.data || res
+  const c = data.complaint
+  const approvals = data.approvals || []
+  const handling = data.handling || []
+  const latestApproval = approvals[0]
+  const latestHandling = handling[0] || null
+  order.value = {
+    id: c?.Id || orderId,
+    type: 'complaint',
+    subtype: c?.Type || '',
+    building: c?.Building || '',
+    description: c?.Description || '',
+    images: (c?.Images || '').split(',').filter((x: string) => !!x),
+    status: c?.Status || '',
+    submitTime: c?.CreatedAt || '',
+    reviewer: latestApproval?.AdminUserId || '',
+    reviewComment: latestApproval?.Reason || '',
+    reviewTime: latestApproval?.ReviewedAt || '',
+    handlingTime: latestHandling?.HandledAt || latestHandling?.Time || '',
+    handlingNote: latestHandling?.HandleDescription || latestHandling?.Note || '',
+    handlingResult: latestHandling?.ResultDescription || '',
+    handlingPhotos: (() => {
+      const arr = latestHandling?.Photos || latestHandling?.Photots || []
+      if (Array.isArray(arr)) return arr.filter((x: string) => !!x)
+      if (typeof arr === 'string') return arr.split(',').filter((x: string) => !!x)
+      return []
+    })()
+  }
+  reviewComment.value = latestApproval?.Reason || ''
 }
 
 const onBack = () => {
@@ -127,27 +173,16 @@ const previewImage = (images: string[], startPosition: number) => {
 
 const approveOrder = async () => {
   if (!order.value) return
-  
   approving.value = true
-  
   try {
-    // 模拟审核通过
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    workOrderStore.updateWorkOrder(order.value.id, {
-      status: 'approved',
-      reviewTime: new Date().toLocaleString('zh-CN'),
-      reviewer: '管理员',
-      reviewComment: reviewComment.value || '审核通过'
-    })
-    
-    showSuccessToast('审核通过，已同步至物业端')
-    
-    setTimeout(() => {
-      router.back()
-    }, 1500)
-  } catch (error) {
-    showFailToast('审核失败，请重试')
+    const token = userStore.user?.token || ''
+    const res = await complaintApprove(token, { complaintId: order.value.id, approved: true, reason: reviewComment.value || '同意处理' })
+    if (res && res.result === true) {
+      showSuccessToast('审核通过，已同步至物业端')
+      setTimeout(() => { router.back() }, 1200)
+    } else {
+      showFailToast((res && res.msg) || '审核失败')
+    }
   } finally {
     approving.value = false
   }
@@ -155,32 +190,20 @@ const approveOrder = async () => {
 
 const rejectOrder = async () => {
   if (!order.value) return
-  
   if (!reviewComment.value.trim()) {
     showFailToast('驳回时必须填写审核意见')
     return
   }
-  
   rejecting.value = true
-  
   try {
-    // 模拟审核驳回
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    workOrderStore.updateWorkOrder(order.value.id, {
-      status: 'rejected',
-      reviewTime: new Date().toLocaleString('zh-CN'),
-      reviewer: '管理员',
-      reviewComment: reviewComment.value
-    })
-    
-    showSuccessToast('驳回成功，已通知业主')
-    
-    setTimeout(() => {
-      router.back()
-    }, 1500)
-  } catch (error) {
-    showFailToast('驳回失败，请重试')
+    const token = userStore.user?.token || ''
+    const res = await complaintApprove(token, { complaintId: order.value.id, approved: false, reason: reviewComment.value })
+    if (res && res.result === true) {
+      showSuccessToast('驳回成功，已通知业主')
+      setTimeout(() => { router.back() }, 1200)
+    } else {
+      showFailToast((res && res.msg) || '驳回失败')
+    }
   } finally {
     rejecting.value = false
   }

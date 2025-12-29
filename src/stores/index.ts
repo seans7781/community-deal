@@ -9,6 +9,7 @@ export interface User {
   building?: string
   room?: string
   password?: string
+  token?: string
 }
 
 export interface WorkOrder {
@@ -19,7 +20,7 @@ export interface WorkOrder {
   description: string
   phone: string
   images: string[]
-  status: 'pending' | 'approved' | 'rejected' | 'processing' | 'completed'
+  status: 'PendingApproval' | 'Approved' | 'Rejected' | 'Handling' | 'Closed'
   submitTime: string
   ownerName: string
   reviewTime?: string
@@ -62,16 +63,6 @@ export interface Suggestion {
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
   const isLoggedIn = ref(false)
-  const registeredOwners = ref<User[]>([])
-  const presetUsers = ref<User[]>([])
-
-  if (presetUsers.value.length === 0) {
-    presetUsers.value.push(
-      { id: 'admin-001', name: '管理员', role: 'admin', phone: '13800138001', password: 'admin123' },
-      { id: 'owner-demo-001', name: '张三', role: 'owner', phone: '13800138002', building: '1栋', room: '101', password: 'owner123' },
-      { id: 'property-001', name: '物业客服', role: 'property', phone: '13800138003', password: 'property123' }
-    )
-  }
 
   const login = (userData: User) => {
     user.value = userData
@@ -81,36 +72,24 @@ export const useUserStore = defineStore('user', () => {
   const logout = () => {
     user.value = null
     isLoggedIn.value = false
+    try { localStorage.removeItem('token') } catch {}
   }
 
-  const registerOwner = (data: { name: string; phone: string; building: string; room: string; password: string }) => {
-    const exists = registeredOwners.value.find(u => u.phone === data.phone)
-    if (exists) return null
-    const newUser: User = {
-      id: 'owner-' + Date.now().toString(),
-      name: data.name,
-      role: 'owner',
-      phone: data.phone,
-      building: data.building,
-      room: data.room,
-      password: data.password
+  const registerOwner = async (data: { name: string; phone: string; building: string; room: string; password: string }) => {
+    const payload = { building: data.building, roomNo: data.room, phone: data.phone, name: data.name, password: data.password }
+    const res = await (await import('@/services/communityHome')).ownerRegister(payload)
+    return res
+  }
+
+  const loginWithPassword = async (phone: string, password: string) => {
+    const api = await import('@/services/communityHome')
+    const ret = await api.login({ usernameOrPhone: phone, password })
+    if (!ret || ret.ok === false) {
+      return { ok: false, msg: ret?.msg || '账号或密码错误' }
     }
-    registeredOwners.value.push(newUser)
-    return newUser
-  }
-
-  const getOwnerByPhone = (phone: string) => {
-    return registeredOwners.value.find(u => u.phone === phone) || null
-  }
-
-  const loginWithPassword = (phone: string, password: string) => {
-    const preset = presetUsers.value.find(u => u.phone === phone)
-    const found = preset || getOwnerByPhone(phone)
-    if (found && found.password === password) {
-      login(found)
-      return true
-    }
-    return false
+    login({ id: ret.userId as string, name: ret.name as string, role: ret.role as any, phone, token: ret.token as string })
+    try { localStorage.setItem('token', ret.token as string) } catch {}
+    return { ok: true }
   }
 
   return {
@@ -118,95 +97,13 @@ export const useUserStore = defineStore('user', () => {
     isLoggedIn,
     login,
     logout,
-    registeredOwners,
-    presetUsers,
     registerOwner,
-    getOwnerByPhone,
-    
     loginWithPassword
   }
 })
 
 export const useWorkOrderStore = defineStore('workOrder', () => {
   const workOrders = ref<WorkOrder[]>([])
-
-  if (workOrders.value.length === 0) {
-    const seed: WorkOrder[] = [
-      {
-        id: 'TS20250609001',
-        type: 'complaint',
-        subtype: '噪音扰民',
-        building: '5栋1单元302',
-        description: '楼上住户晚上10点后大声播放音乐，影响休息。',
-        phone: '13800000001',
-        images: [],
-        status: 'approved',
-        submitTime: '2025-06-09 16:45:12',
-        ownerName: '李四'
-      },
-      {
-        id: 'TS20250609002',
-        type: 'complaint',
-        subtype: '电梯异常',
-        building: '3栋2单元电梯',
-        description: '电梯运行时有异响，担心安全问题。',
-        phone: '13800000002',
-        images: [],
-        status: 'approved',
-        submitTime: '2025-06-09 15:20:10',
-        ownerName: '王五'
-      },
-      {
-        id: 'TS20250609003',
-        type: 'complaint',
-        subtype: '公共卫生',
-        building: '2栋一楼大厅',
-        description: '大厅地面有积尘，需加强保洁。',
-        phone: '13800000003',
-        images: [],
-        status: 'approved',
-        submitTime: '2025-06-09 14:05:33',
-        ownerName: '赵六'
-      },
-      {
-        id: 'TS20250609004',
-        type: 'complaint',
-        subtype: '绿化维护',
-        building: '小区主路旁',
-        description: '绿化带杂草较多，影响美观。',
-        phone: '13800000004',
-        images: [],
-        status: 'approved',
-        submitTime: '2025-06-09 13:18:27',
-        ownerName: '孙七'
-      },
-      {
-        id: 'TS20250609005',
-        type: 'complaint',
-        subtype: '停车管理',
-        building: '地下车库B区',
-        description: '有车辆长期占用消防通道。',
-        phone: '13800000005',
-        images: [],
-        status: 'approved',
-        submitTime: '2025-06-09 12:40:05',
-        ownerName: '周八'
-      },
-      {
-        id: 'TS20250609006',
-        type: 'complaint',
-        subtype: '噪音扰民',
-        building: '1栋2单元502',
-        description: '装修施工噪音超时，望规范。',
-        phone: '13800000006',
-        images: [],
-        status: 'approved',
-        submitTime: '2025-06-09 11:12:48',
-        ownerName: '钱九'
-      }
-    ]
-    workOrders.value.push(...seed)
-  }
 
   const addWorkOrder = (order: WorkOrder) => {
     workOrders.value.push(order)
@@ -245,47 +142,6 @@ export * from './carouselStore'
 
 export const useChatStore = defineStore('chat', () => {
   const messages = ref<ChatMessage[]>([])
-
-  if (messages.value.length === 0) {
-    messages.value.push(
-      {
-        id: 'ANN20250609001',
-        content: '本周五晚8点社区会议室召开业主大会，请准时参加',
-        senderName: '管理员',
-        senderId: 'admin',
-        senderRole: 'admin',
-        submitTime: '2025-06-09 10:00:00',
-        status: 'approved'
-      },
-      {
-        id: 'ANN20250609002',
-        content: '高温来临，请注意用电安全，及时关闭电器',
-        senderName: '管理员',
-        senderId: 'admin',
-        senderRole: 'admin',
-        submitTime: '2025-06-09 11:00:00',
-        status: 'approved'
-      },
-      {
-        id: 'ANN20250609003',
-        content: '电梯维保周三上午进行，请合理安排出行',
-        senderName: '管理员',
-        senderId: 'admin',
-        senderRole: 'admin',
-        submitTime: '2025-06-09 12:00:00',
-        status: 'approved'
-      },
-      {
-        id: 'ANN20250609004',
-        content: '地下车库B区将进行清洁，届时请勿长时间停放',
-        senderName: '管理员',
-        senderId: 'admin',
-        senderRole: 'admin',
-        submitTime: '2025-06-09 13:00:00',
-        status: 'approved'
-      }
-    )
-  }
 
   const addMessage = (message: ChatMessage) => {
     messages.value.push(message)

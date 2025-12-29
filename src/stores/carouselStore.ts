@@ -2,10 +2,7 @@ import { defineStore } from 'pinia';
 
 export const useCarouselStore = defineStore('carousel', {
   state: () => ({
-    images: [
-      { id: '1', src: 'https://fastly.jsdelivr.net/npm/@vant/assets/apple-1.jpeg' },
-      { id: '2', src: 'https://fastly.jsdelivr.net/npm/@vant/assets/apple-2.jpeg' },
-    ],
+    images: [] as { id: string; src: string }[],
   }),
   actions: {
     addImage(src: string) {

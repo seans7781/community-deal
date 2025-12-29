@@ -71,14 +71,20 @@
               @click="goToSuggestionReviewHistory"
             />
             <van-cell
+              title="公告管理"
+              is-link
+              @click="goToAnnouncementManagement"
+            />
+            <!-- <van-cell
               title="账号管理"
               is-link
               @click="goToAccountManage"
-            />
+            /> -->
             <van-cell
               title="轮播图片管理"
               is-link
               @click="goToCarouselManagement"
+              :value="bannerCount > 0 ? bannerCount + '张已启用' : ''"
             />
           </van-cell-group>
         </div>
@@ -87,43 +93,52 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ImageCarousel from '@/components/ImageCarousel.vue'
 import { useRouter } from 'vue-router'
-import { showDialog } from 'vant'
-import { useWorkOrderStore, useChatStore } from '@/stores'
+ 
+import { useUserStore } from '@/stores'
+import { announcementsAdmin, bannersPublic, adminWorkorderStats } from '@/services/communityHome'
 
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
-const chatStore = useChatStore()
+const userStore = useUserStore()
 
-const pendingCount = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('pending').length
-})
+const pendingCount = ref(0)
+const approvedCount = ref(0)
+const completedCount = ref(0)
+const bannerCount = ref(0)
 
-const approvedCount = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('approved').length
-})
-
-const completedCount = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('completed').length
-})
-
-const adminNotices = computed(() => {
-  return chatStore.getApprovedMessages()
-    .filter(m => m.senderRole === 'admin')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
-})
-
-const announcementItems = computed(() => {
-  return adminNotices.value.map(n => n.content)
-})
+const announcementItems = ref<string[]>([])
 
 const announcementItemsToShow = computed(() => {
   return announcementItems.value.length > 0 ? announcementItems.value : ['暂无公告']
 })
 
-// 移除退出按钮
+onMounted(() => {
+  ;(async () => {
+    const token = userStore.user?.token || ''
+    const annsRes = await announcementsAdmin(token)
+    const annsData = (annsRes && (annsRes.data || annsRes)) as any
+    const annsList = Array.isArray(annsData) ? annsData : []
+    announcementItems.value = annsList
+      .filter((it: any) => it.Enabled !== false)
+      .sort((a: any, b: any) => new Date(b.UpdatedAt || b.CreatedAt || 0).getTime() - new Date(a.UpdatedAt || a.CreatedAt || 0).getTime())
+      .map((it: any) => it.Content || '')
+
+    const statsRes = await adminWorkorderStats(token)
+    const stats = (statsRes && (statsRes.data || statsRes)) as any
+    const complaint = stats?.complaint || {}
+    const repair = stats?.repair || {}
+    pendingCount.value = (complaint?.pendingApproval || 0) + (repair?.pendingApproval || 0)
+    approvedCount.value = (complaint?.approved || 0) + (repair?.approved || 0)
+    completedCount.value = (complaint?.propertyProcessed || 0) + (repair?.propertyProcessed || 0)
+
+    const bannersRes = await bannersPublic(token)
+    const bannersData = (bannersRes && (bannersRes.data || bannersRes)) as any
+    const bannersList = Array.isArray(bannersData) ? bannersData : []
+    bannerCount.value = bannersList.filter((it: any) => it.Enabled !== false).length
+  })()
+})
 
 const goToReviewList = () => {
   router.push('/admin/review-list')
@@ -133,9 +148,9 @@ const goToReviewHistory = () => {
   router.push('/admin/review-history')
 }
 
-const goToAccountManage = () => {
-  showDialog({ message: '账号管理功能开发中...' })
-}
+// const goToAccountManage = () => {
+//   showDialog({ message: '账号管理功能开发中...' })
+// }
 
 const goToCarouselManagement = () => {
   router.push('/admin/carousel-management')
@@ -147,6 +162,10 @@ const goToSuggestionReviewList = () => {
 
 const goToSuggestionReviewHistory = () => {
   router.push('/admin/suggestion-review-history')
+}
+
+const goToAnnouncementManagement = () => {
+  router.push('/admin/announcement-management')
 }
 
 const goToAnnouncements = () => {

@@ -33,22 +33,44 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSuggestionStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { adminHandledSuggestions } from '@/services/communityHome'
 
 const router = useRouter()
-const suggestionStore = useSuggestionStore()
+const userStore = useUserStore()
+const remote = ref<any[]>([])
 
 const reviewedSuggestions = computed(() => {
-  return suggestionStore.suggestions
-    .filter(s => s.status === 'approved' || s.status === 'rejected')
-    .sort((a, b) => new Date(b.reviewTime || '').getTime() - new Date(a.reviewTime || '').getTime())
+  return remote.value
+    .filter((it: any) => it.Status === 'Approved' || it.Status === 'Rejected')
+    .map((it: any) => ({
+      id: it.Id || it.id || '',
+      title: it.Title || it.title || '',
+      content: it.Content || it.content || '',
+      submitTime: it.CreatedAt || '',
+      targetRole: ((it.Target || '').toLowerCase() === 'property' ? 'property' : 'owner') as 'owner' | 'property',
+      reviewTime: it.ApprovedAt || it.UpdatedAt || '',
+      reviewer: it.ApprovedByUserId || '',
+      reviewComment: it.ApprovalReason || '',
+      status: (it.Status === 'Approved' ? 'approved' : 'rejected')
+    }))
+    .sort((a: any, b: any) => new Date(b.reviewTime || '').getTime() - new Date(a.reviewTime || '').getTime())
 })
 
 const roleText = (r: 'owner' | 'property') => r === 'owner' ? '业主' : '物业'
 
 const onBack = () => { router.push('/admin/home') }
+
+const refresh = async () => {
+  const token = userStore.user?.token || ''
+  const res = await adminHandledSuggestions(token)
+  const data = (res && (res.data || res)) as any
+  remote.value = Array.isArray(data) ? data : []
+}
+
+onMounted(refresh)
 </script>
 
 <style scoped>

@@ -614,6 +614,9 @@
                   },
                   "contactPhone": {
                     "type": "string"
+                  },
+                  "requestType": {
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -621,7 +624,8 @@
                   "building",
                   "description",
                   "images",
-                  "contactPhone"
+                  "contactPhone",
+                  "requestType"
                 ]
               },
               "example": {
@@ -677,7 +681,8 @@
                   }
                 }
               }
-            }
+            },
+            "headers": {}
           }
         },
         "security": []
@@ -690,6 +695,16 @@
         "description": "",
         "tags": [],
         "parameters": [
+          {
+            "name": "requestType",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "COMPLAINT",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "token",
             "in": "header",
@@ -1460,6 +1475,1732 @@
                 }
               },
               "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/BannersPublic": {
+      "get": {
+        "summary": "获取轮播图",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "1770451b35ae407aa22c893a0a6a0f53c80f3819",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "ImageUrl": {
+                            "type": "string"
+                          },
+                          "LinkUrl": {
+                            "type": "string"
+                          },
+                          "Enabled": {
+                            "type": "boolean"
+                          },
+                          "SortOrder": {
+                            "type": "integer"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          },
+                          "CreatedByUserId": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "013ea6eefe774fb0819fcc35dffab6a1",
+                      "Title": "1115464",
+                      "ImageUrl": "https://example.com/banner2.webp",
+                      "LinkUrl": "https://example.com/detail",
+                      "Enabled": true,
+                      "SortOrder": 1,
+                      "CreatedAt": "2025-12-19T16:16:34.563",
+                      "UpdatedAt": "2025-12-19T16:25:11.083",
+                      "CreatedByUserId": "6F2FCC9607C14F9EB267170B13D1C090"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintPending": {
+      "get": {
+        "summary": "管理员待审核",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "a48aef6aee284cd7930ad5a137a1d230e198fbc7",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "OwnerUserId": {
+                            "type": "string"
+                          },
+                          "Type": {
+                            "type": "string"
+                          },
+                          "Building": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Images": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "d325de6ff6a94ce9a9f6314a7e793f54",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Type": "噪音扰民",
+                      "Building": "3栋",
+                      "Description": "3栋101室深夜施工噪音，影响休息",
+                      "Images": "https://example.com/1.jpg,https://example.com/2.png",
+                      "ContactPhone": "13900000000",
+                      "Status": "PendingApproval",
+                      "CreatedAt": "2025-12-19T09:20:55.387"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ComplaintAssigned": {
+      "get": {
+        "summary": "物业待处理",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "e8b868b7362c4be2a854c92c07cca19feaa1c5d6",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": []
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestSubmit": {
+      "post": {
+        "summary": "业主新增建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "403355a2895d49a58a241e45a7513b7d29216019",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  },
+                  "contactPhone": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "content",
+                  "target",
+                  "contactPhone"
+                ]
+              },
+              "example": {
+                "title": "改善小区服务水平",
+                "content": "建议增加运动设施",
+                "target": "环境卫生",
+                "contactPhone": "13900000000"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "suggestionId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "suggestionId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "建议提交成功",
+                  "data": {
+                    "suggestionId": "46139f2995444f85943c22ff23dd8b2c"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestMy": {
+      "get": {
+        "summary": "业主获取提交的建议列表",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "403355a2895d49a58a241e45a7513b7d29216019",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Target": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "Title",
+                          "Content",
+                          "Target",
+                          "ContactPhone",
+                          "Status",
+                          "CreatedAt",
+                          "UpdatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "46139f2995444f85943c22ff23dd8b2c",
+                      "Title": "改善小区服务水平",
+                      "Content": "建议增加运动设施",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "PendingApproval",
+                      "CreatedAt": "2025-12-22T09:33:20.953",
+                      "UpdatedAt": "2025-12-22T09:33:20.953"
+                    },
+                    {
+                      "Id": "b359d3fe025f4616b96a78f63b4f8c30",
+                      "Title": "改善垃圾清运频次",
+                      "Content": "建议增加晚间清运",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "PendingApproval",
+                      "CreatedAt": "2025-12-22T09:32:51.173",
+                      "UpdatedAt": "2025-12-22T09:32:51.173"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestDelete": {
+      "post": {
+        "summary": "业主删除建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "403355a2895d49a58a241e45a7513b7d29216019",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "suggestionId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "suggestionId"
+                ]
+              },
+              "example": {
+                "suggestionId": "46139f2995444f85943c22ff23dd8b2c"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "删除成功"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestPendingAdmin": {
+      "get": {
+        "summary": "管理员获取待审核建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "8bf0043d358749288860c5ee6381c4e548c77354",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "OwnerUserId": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Target": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "b359d3fe025f4616b96a78f63b4f8c30",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Title": "改善垃圾清运频次",
+                      "Content": "建议增加晚间清运",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "PendingApproval",
+                      "CreatedAt": "2025-12-22T09:32:51.173",
+                      "UpdatedAt": "2025-12-22T09:32:51.173"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestApprove": {
+      "post": {
+        "summary": "管理员审批",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "8bf0043d358749288860c5ee6381c4e548c77354",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "suggestionId": {
+                    "type": "string"
+                  },
+                  "approved": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "suggestionId",
+                  "approved",
+                  "reason"
+                ]
+              },
+              "example": {
+                "suggestionId": "b359d3fe025f4616b96a78f63b4f8c30",
+                "approved": true,
+                "reason": "符合受理条件"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "审批完成"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestAssignedProperty": {
+      "get": {
+        "summary": "物业查看已通过的建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "36fabc2b8d524dad8646fc4571302f718a1ae760",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "OwnerUserId": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Target": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "b359d3fe025f4616b96a78f63b4f8c30",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Title": "改善垃圾清运频次",
+                      "Content": "建议增加晚间清运",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "Approved",
+                      "CreatedAt": "2025-12-22T09:32:51.173",
+                      "UpdatedAt": "2025-12-22T09:42:15.247"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestHandle": {
+      "post": {
+        "summary": "物业处理建议回复",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "36fabc2b8d524dad8646fc4571302f718a1ae760",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "suggestionId": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "suggestionId",
+                  "note"
+                ]
+              },
+              "example": {
+                "suggestionId": "b359d3fe025f4616b96a78f63b4f8c30",
+                "note": "已安排增加清运频次"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": false,
+                  "msg": "状态不允许处置"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/SuggestDetail": {
+      "get": {
+        "summary": "获取建议详情（带处置意见）",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "b359d3fe025f4616b96a78f63b4f8c30",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "403355a2895d49a58a241e45a7513b7d29216019",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "suggestion": {
+                          "type": "object",
+                          "properties": {
+                            "Id": {
+                              "type": "string"
+                            },
+                            "OwnerUserId": {
+                              "type": "string"
+                            },
+                            "Title": {
+                              "type": "string"
+                            },
+                            "Content": {
+                              "type": "string"
+                            },
+                            "Target": {
+                              "type": "string"
+                            },
+                            "ContactPhone": {
+                              "type": "string"
+                            },
+                            "Status": {
+                              "type": "string"
+                            },
+                            "CreatedAt": {
+                              "type": "string"
+                            },
+                            "UpdatedAt": {
+                              "type": "string"
+                            },
+                            "ApprovedByUserId": {
+                              "type": "string"
+                            },
+                            "ApprovedAt": {
+                              "type": "string"
+                            },
+                            "ApprovalReason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "Id",
+                            "OwnerUserId",
+                            "Title",
+                            "Content",
+                            "Target",
+                            "ContactPhone",
+                            "Status",
+                            "CreatedAt",
+                            "UpdatedAt",
+                            "ApprovedByUserId",
+                            "ApprovedAt",
+                            "ApprovalReason"
+                          ]
+                        },
+                        "opinions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "userId": {
+                                "type": "string"
+                              },
+                              "reason": {
+                                "type": "string"
+                              },
+                              "time": {
+                                "type": "string"
+                              },
+                              "note": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "userId",
+                              "time"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "suggestion",
+                        "opinions"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": {
+                    "suggestion": {
+                      "Id": "b359d3fe025f4616b96a78f63b4f8c30",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Title": "改善垃圾清运频次",
+                      "Content": "建议增加晚间清运",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "Resolved",
+                      "CreatedAt": "2025-12-22T09:32:51.173",
+                      "UpdatedAt": "2025-12-22T09:49:13.723",
+                      "ApprovedByUserId": "6F2FCC9607C14F9EB267170B13D1C090",
+                      "ApprovedAt": "2025-12-22T09:42:15.247",
+                      "ApprovalReason": "符合受理条件"
+                    },
+                    "opinions": [
+                      {
+                        "type": "Approval",
+                        "userId": "6F2FCC9607C14F9EB267170B13D1C090",
+                        "reason": "符合受理条件",
+                        "time": "2025-12-22T09:42:15.247"
+                      },
+                      {
+                        "type": "Handling",
+                        "userId": "9f1ee89960f24d22a51409a061c322e8",
+                        "note": "已安排增加清运频次",
+                        "time": "2025-12-22T09:49:13.723"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminWorkorderStats": {
+      "get": {
+        "summary": "获取统计指标",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "61caa03b7c5c403dbe2ff2c567cc2151bbe3f3b7",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "complaint": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer"
+                            },
+                            "approved": {
+                              "type": "integer"
+                            },
+                            "pendingApproval": {
+                              "type": "integer"
+                            },
+                            "propertyProcessed": {
+                              "type": "integer"
+                            },
+                            "propertyPending": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "approved",
+                            "pendingApproval",
+                            "propertyProcessed",
+                            "propertyPending"
+                          ]
+                        },
+                        "repair": {
+                          "type": "object",
+                          "properties": {
+                            "total": {
+                              "type": "integer"
+                            },
+                            "approved": {
+                              "type": "integer"
+                            },
+                            "pendingApproval": {
+                              "type": "integer"
+                            },
+                            "propertyProcessed": {
+                              "type": "integer"
+                            },
+                            "propertyPending": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "approved",
+                            "pendingApproval",
+                            "propertyProcessed",
+                            "propertyPending"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "complaint",
+                        "repair"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": {
+                    "complaint": {
+                      "total": 5,
+                      "approved": 2,
+                      "pendingApproval": 2,
+                      "propertyProcessed": 1,
+                      "propertyPending": 1
+                    },
+                    "repair": {
+                      "total": 5,
+                      "approved": 3,
+                      "pendingApproval": 2,
+                      "propertyProcessed": 0,
+                      "propertyPending": 2
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminHandledWorkorders": {
+      "get": {
+        "summary": "管理员已处理工单",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "8cb39aed2f27457db3bfd08a51d33757a4045499",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "RequestType": {
+                            "type": "string"
+                          },
+                          "Type": {
+                            "type": "string"
+                          },
+                          "Building": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Images": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "RequestType",
+                          "Type",
+                          "Building",
+                          "Description",
+                          "Images",
+                          "ContactPhone",
+                          "Status",
+                          "CreatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "f32f5ab2afa34dfc9a8aebfdf47510a0",
+                      "RequestType": "REPAIR",
+                      "Type": "家电维修",
+                      "Building": "10",
+                      "Description": "10101010101010",
+                      "Images": "https://ncys.nnkcy.com/wyapi/Attachment/Community-Home/REPAIR/be33df170318401fa6c84d947855c123.jpg",
+                      "ContactPhone": "19163816431",
+                      "Status": "Rejected",
+                      "CreatedAt": "2025-12-22T15:43:11.54"
+                    },
+                    {
+                      "Id": "f750b7bfe9ad4b689757487e7a18bf55",
+                      "RequestType": "COMPLAINT",
+                      "Type": "噪音扰民",
+                      "Building": "9",
+                      "Description": "9999999999999",
+                      "Images": "https://ncys.nnkcy.com/Attachment/Community-Home/COMPLAINT/d8d276e8ea994c40be07ea2726392851.jpg",
+                      "ContactPhone": "19163816431",
+                      "Status": "Approved",
+                      "CreatedAt": "2025-12-22T15:17:35.453"
+                    },
+                    {
+                      "Id": "b896ccfcf4784c7a95a1f5ca811650c9",
+                      "RequestType": "REPAIR",
+                      "Type": "家电维修",
+                      "Building": "77",
+                      "Description": "777777777777777",
+                      "Images": "https://ncys.nnkcy.com/Attachment/Community-Home/REPAIR/3d4c10cd54de477f91063c74478b598c.jpg",
+                      "ContactPhone": "19163816431",
+                      "Status": "Approved",
+                      "CreatedAt": "2025-12-22T11:14:48.267"
+                    },
+                    {
+                      "Id": "d325de6ff6a94ce9a9f6314a7e793f54",
+                      "RequestType": "COMPLAINT",
+                      "Type": "噪音扰民",
+                      "Building": "3栋",
+                      "Description": "3栋101室深夜施工噪音，影响休息",
+                      "Images": "https://example.com/1.jpg,https://example.com/2.png",
+                      "ContactPhone": "13900000000",
+                      "Status": "Rejected",
+                      "CreatedAt": "2025-12-19T09:20:55.387"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/PropertyHandledWorkorders": {
+      "get": {
+        "summary": "物业已处理工单",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "61caa03b7c5c403dbe2ff2c567cc2151bbe3f3b7",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "RequestType": {
+                            "type": "string"
+                          },
+                          "Type": {
+                            "type": "string"
+                          },
+                          "Building": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Images": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "RequestType",
+                          "Type",
+                          "Building",
+                          "Description",
+                          "Images",
+                          "ContactPhone",
+                          "Status",
+                          "CreatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "7afb2c972dbc463cb905a5e8f74aaf82",
+                      "RequestType": "REPAIR",
+                      "Type": "家电维修",
+                      "Building": "10",
+                      "Description": "10101010101010",
+                      "Images": "https://ncys.nnkcy.com/wyapi/Attachment/Community-Home/REPAIR/f7718d6ccd364ebf9eafbd2747dc788c.jpg",
+                      "ContactPhone": "19163816431",
+                      "Status": "Closed",
+                      "CreatedAt": "2025-12-22T15:43:13.383"
+                    },
+                    {
+                      "Id": "54de3d72c1a74c82b8d01167193e795d",
+                      "RequestType": "COMPLAINT",
+                      "Type": "噪音扰民",
+                      "Building": "3栋",
+                      "Description": "3栋101室深夜施工噪音，影响休息",
+                      "Images": "https://example.com/1.jpg,https://example.com/2.png",
+                      "ContactPhone": "13900000000",
+                      "Status": "Closed",
+                      "CreatedAt": "2025-12-19T09:21:41.263"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminHandledSuggestions": {
+      "get": {
+        "summary": "管理员已处理建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "8cb39aed2f27457db3bfd08a51d33757a4045499",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "OwnerUserId": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Target": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "ApprovedByUserId": {
+                            "type": "string"
+                          },
+                          "ApprovedAt": {
+                            "type": "string"
+                          },
+                          "ApprovalReason": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "OwnerUserId",
+                          "Title",
+                          "Content",
+                          "Target",
+                          "ContactPhone",
+                          "Status",
+                          "ApprovedByUserId",
+                          "ApprovedAt",
+                          "ApprovalReason",
+                          "CreatedAt",
+                          "UpdatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "a5ba35d02d6e4b3d9dc28c5cfa8c45f6",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Title": "9",
+                      "Content": "99999999999",
+                      "Target": "PROPERTY",
+                      "ContactPhone": "19163816431",
+                      "Status": "Approved",
+                      "ApprovedByUserId": "6F2FCC9607C14F9EB267170B13D1C090",
+                      "ApprovedAt": "2025-12-22T16:05:43.587",
+                      "ApprovalReason": null,
+                      "CreatedAt": "2025-12-22T15:25:52.703",
+                      "UpdatedAt": "2025-12-22T16:05:43.587"
+                    },
+                    {
+                      "Id": "c46b74bb51c14d6382f88408378c3dd4",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Title": "改善小区服务水平",
+                      "Content": "建议增加运动设施",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "Rejected",
+                      "ApprovedByUserId": "6F2FCC9607C14F9EB267170B13D1C090",
+                      "ApprovedAt": "2025-12-22T11:12:03.417",
+                      "ApprovalReason": "bu符合受理条件",
+                      "CreatedAt": "2025-12-22T11:07:41.227",
+                      "UpdatedAt": "2025-12-22T11:12:03.417"
+                    },
+                    {
+                      "Id": "b359d3fe025f4616b96a78f63b4f8c30",
+                      "OwnerUserId": "3d78f98e35f64b8bac0411a59405557b",
+                      "Title": "改善垃圾清运频次",
+                      "Content": "建议增加晚间清运",
+                      "Target": "环境卫生",
+                      "ContactPhone": "13900000000",
+                      "Status": "Rejected",
+                      "ApprovedByUserId": "6F2FCC9607C14F9EB267170B13D1C090",
+                      "ApprovedAt": "2025-12-22T11:08:12.92",
+                      "ApprovalReason": "符合受理条件",
+                      "CreatedAt": "2025-12-22T09:32:51.173",
+                      "UpdatedAt": "2025-12-22T11:08:12.92"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/PropertyHandledSuggestions": {
+      "get": {
+        "summary": "物业已处理建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "ea96572e1c584dfe90e827428da9a8c6f4a64852",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": []
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/ChangePassword": {
+      "post": {
+        "summary": "修改密码",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "<有效token>",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernameOrPhone": {
+                    "type": "string"
+                  },
+                  "oldpassword": {
+                    "type": "string"
+                  },
+                  "newpassword": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "usernameOrPhone",
+                  "oldpassword",
+                  "newpassword"
+                ]
+              },
+              "example": {
+                "usernameOrPhone": "<用户名或手机号>",
+                "oldpassword": "<旧密码>",
+                "newpassword": "<新密码>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminResetPassword": {
+      "post": {
+        "summary": "管理员重置用户密码",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernameOrPhone": {
+                    "type": "string"
+                  },
+                  "newpassword": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "usernameOrPhone",
+                  "newpassword"
+                ]
+              },
+              "example": {
+                "usernameOrPhone": "<用户名或手机号>",
+                "newpassword": "AdminReset@2025!"
+              }
             }
           }
         },

@@ -35,6 +35,18 @@
         label="建议对象"
       />
 
+      <van-field
+        v-model="contactPhone"
+        label="联系电话"
+        type="tel"
+        placeholder="请输入联系电话"
+        required
+        :rules="[
+          { required: true, message: '请填写联系电话' },
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }
+        ]"
+      />
+
       <div class="submit-section">
         <van-button
           type="primary"
@@ -52,15 +64,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { showSuccessToast } from 'vant'
-import { useUserStore, useSuggestionStore } from '@/stores'
+import { showSuccessToast, showFailToast } from 'vant'
+import { useUserStore } from '@/stores'
+import { suggestSubmit } from '@/services/communityHome'
 
 const router = useRouter()
 const userStore = useUserStore()
-const suggestionStore = useSuggestionStore()
 
 const title = ref('')
 const content = ref('')
+const contactPhone = ref(userStore.user?.phone || '')
 
 const targetRole = computed<'owner' | 'property'>(() => {
   const role = userStore.user?.role
@@ -72,28 +85,23 @@ const targetRoleText = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return title.value.trim().length > 0 && content.value.trim().length >= 10
+  return title.value.trim().length > 0 && content.value.trim().length >= 10 && /^1[3-9]\d{9}$/.test(contactPhone.value)
 })
 
 const onBack = () => { router.back() }
 
-const onSubmit = () => {
+const onSubmit = async () => {
   const sender = userStore.user
   if (!sender) return
-  const id = 'SG' + Date.now().toString()
-  suggestionStore.addSuggestion({
-    id,
-    title: title.value.trim(),
-    content: content.value.trim(),
-    senderName: sender.name,
-    senderId: sender.id,
-    senderRole: sender.role === 'owner' ? 'owner' : 'property',
-    targetRole: targetRole.value,
-    submitTime: new Date().toLocaleString('zh-CN'),
-    status: 'pending'
-  })
-  showSuccessToast('建议已提交，等待管理员审核')
-  setTimeout(() => { router.push('/profile') }, 1000)
+  const token = sender.token || ''
+  const payload: { title: string; content: string; target: 'OWNER' | 'PROPERTY'; contactPhone: string } = { title: title.value.trim(), content: content.value.trim(), target: targetRole.value === 'owner' ? 'OWNER' : 'PROPERTY', contactPhone: contactPhone.value }
+  const res = await suggestSubmit(token, payload)
+  if (res && res.result === true) {
+    showSuccessToast('建议已提交，等待管理员审核')
+    setTimeout(() => { router.push('/profile') }, 1000)
+  } else {
+    showFailToast((res && res.msg) || '提交失败')
+  }
 }
 </script>
 

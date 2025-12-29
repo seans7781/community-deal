@@ -35,15 +35,15 @@ const isLogin = computed(() => route.path === '/login' || route.path === '/')
 .main-content {
   flex: 1;
   padding-bottom: 50px;
-  padding-top: 50px;
 }
 </style>
 <style>
 .van-nav-bar {
-  position: fixed;
+  position: sticky !important;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+  background: #fff;
 }
 </style>

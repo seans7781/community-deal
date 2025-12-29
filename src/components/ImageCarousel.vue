@@ -9,10 +9,22 @@
 </template>
 
 <script setup lang="ts">
-import { useCarouselStore } from '@/stores/carouselStore';
+import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores'
+import { bannersPublic } from '@/services/communityHome'
 
-const carouselStore = useCarouselStore();
-const images = carouselStore.images;
+const userStore = useUserStore()
+const images = ref<{ id: string; src: string }[]>([])
+onMounted(async () => {
+  const token = userStore.user?.token || ''
+  const res = await bannersPublic(token)
+  const data = (res && (res.data || res)) as any
+  const items = Array.isArray(data) ? data : []
+  images.value = items
+    .filter((it: any) => it.Enabled !== false)
+    .sort((a: any, b: any) => (a.SortOrder || 0) - (b.SortOrder || 0))
+    .map((it: any) => ({ id: it.Id || it.id || String(Math.random()), src: it.ImageUrl || it.imageUrl || '' }))
+})
 </script>
 
 <style scoped>

@@ -68,19 +68,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useWorkOrderStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { complaintAssigned } from '@/services/communityHome'
 
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 
 const searchValue = ref('')
 const loading = ref(false)
 const finished = ref(false)
 const refreshing = ref(false)
 
+const remote = ref<any[]>([])
 const approvedOrders = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('approved')
-    .sort((a, b) => new Date(b.reviewTime || '').getTime() - new Date(a.reviewTime || '').getTime())
+  return remote.value
+    .map((c: any) => ({
+      id: c.Id || c.id || '',
+      type: String(c.RequestType || c.requestType || '').toUpperCase() === 'REPAIR' ? 'repair' : 'complaint',
+      subtype: c.Type || '',
+      building: c.Building || '',
+      description: c.Description || '',
+      reviewTime: c.ReviewedAt || '',
+    }))
+    .sort((a: any, b: any) => new Date(b.reviewTime || '').getTime() - new Date(a.reviewTime || '').getTime())
 })
 
 const filteredOrders = computed(() => {
@@ -114,19 +124,20 @@ const onClear = () => {
 
 const onRefresh = () => {
   refreshing.value = true
-  // 模拟刷新数据
-  setTimeout(() => {
+  ;(async () => {
+    const token = userStore.user?.token || ''
+    const res = await complaintAssigned(token)
+    const data = (res && (res.data || res)) as any
+    remote.value = Array.isArray(data) ? data : []
     refreshing.value = false
-    finished.value = false
-  }, 1000)
+    finished.value = true
+  })()
 }
 
 const onLoad = () => {
   // 模拟加载更多数据
-  setTimeout(() => {
-    loading.value = false
-    finished.value = true
-  }, 1000)
+  loading.value = false
+  finished.value = true
 }
 
 const goToHandle = (orderId: string) => {

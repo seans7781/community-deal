@@ -27,34 +27,61 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSuggestionStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { suggestPendingAdmin, suggestApprove } from '@/services/communityHome'
+import { showSuccessToast, showFailToast } from 'vant'
 
 const router = useRouter()
-const suggestionStore = useSuggestionStore()
+const userStore = useUserStore()
+const remote = ref<any[]>([])
 
-const pendingSuggestions = computed(() => suggestionStore.getPendingSuggestions())
+const pendingSuggestions = computed(() => remote.value
+  .map(it => ({
+    id: it.Id || it.id || '',
+    title: it.Title || it.title || '',
+    content: it.Content || it.content || '',
+    senderRole: ((it.SenderRole || '').toLowerCase() === 'owner' ? 'owner' : 'property') as 'owner' | 'property',
+    submitTime: it.CreatedAt || it.submitTime || ''
+  }))
+  .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
+)
 
 const roleText = (r: 'owner' | 'property') => r === 'owner' ? '业主' : '物业'
 
-const approve = (id: string) => {
-  suggestionStore.updateSuggestion(id, {
-    status: 'approved',
-    reviewTime: new Date().toLocaleString('zh-CN'),
-    reviewer: '管理员'
-  })
+const approve = async (id: string) => {
+  const token = userStore.user?.token || ''
+  const res = await suggestApprove(token, { suggestionId: id, approved: true })
+  if (res && res.result === true) {
+    showSuccessToast(res.msg || '审批完成')
+    await refresh()
+  } else {
+    showFailToast((res && res.msg) || '审批失败')
+  }
 }
 
-const reject = (id: string) => {
-  suggestionStore.updateSuggestion(id, {
-    status: 'rejected',
-    reviewTime: new Date().toLocaleString('zh-CN'),
-    reviewer: '管理员'
-  })
+const reject = async (id: string) => {
+  const token = userStore.user?.token || ''
+  const res = await suggestApprove(token, { suggestionId: id, approved: false })
+  if (res && res.result === true) {
+    showSuccessToast(res.msg || '已驳回')
+    await refresh()
+  } else {
+    showFailToast((res && res.msg) || '驳回失败')
+  }
 }
 
 const onBack = () => { router.push('/admin/home') }
+
+const refresh = async () => {
+  const token = userStore.user?.token || ''
+  const res = await suggestPendingAdmin(token)
+  const data = (res && (res.data || res)) as any
+  remote.value = Array.isArray(data) ? data : []
+}
+
+onMounted(refresh)
 </script>
 
 <style scoped>

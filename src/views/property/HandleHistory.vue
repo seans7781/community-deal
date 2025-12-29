@@ -68,19 +68,31 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useWorkOrderStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { propertyHandledWorkorders } from '@/services/communityHome'
 
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 
 const searchValue = ref('')
 const loading = ref(false)
 const finished = ref(false)
 const refreshing = ref(false)
+const remote = ref<any[]>([])
 
 const completedOrders = computed(() => {
-  return workOrderStore.getWorkOrdersByStatus('completed')
-    .sort((a, b) => new Date(b.handleTime || '').getTime() - new Date(a.handleTime || '').getTime())
+  return remote.value
+    .map((c: any) => ({
+      id: c.Id || c.id || '',
+      type: String(c.RequestType || c.requestType || '').toUpperCase() === 'REPAIR' ? 'repair' : 'complaint',
+      subtype: c.Type || '',
+      building: c.Building || '',
+      description: c.Description || '',
+      handleTime: c.UpdatedAt || c.CreatedAt || '',
+      handler: '',
+      handleDescription: ''
+    }))
+    .sort((a: any, b: any) => new Date(b.handleTime || '').getTime() - new Date(a.handleTime || '').getTime())
 })
 
 const filteredOrders = computed(() => {
@@ -88,7 +100,7 @@ const filteredOrders = computed(() => {
     return completedOrders.value
   }
   const keyword = searchValue.value.toLowerCase()
-  return completedOrders.value.filter(order => 
+  return completedOrders.value.filter((order: any) => 
     order.id.toLowerCase().includes(keyword) ||
     order.building.toLowerCase().includes(keyword) ||
     (order.handler || '').toLowerCase().includes(keyword)
@@ -106,19 +118,19 @@ const onBack = () => {
 const onSearch = () => {}
 const onClear = () => { searchValue.value = '' }
 
-const onRefresh = () => {
+const onRefresh = async () => {
   refreshing.value = true
-  setTimeout(() => {
-    refreshing.value = false
-    finished.value = false
-  }, 800)
+  const token = userStore.user?.token || ''
+  const res = await propertyHandledWorkorders(token)
+  const data = (res && (res.data || res)) as any
+  remote.value = Array.isArray(data) ? data : []
+  refreshing.value = false
+  finished.value = true
 }
 
 const onLoad = () => {
-  setTimeout(() => {
-    loading.value = false
-    finished.value = true
-  }, 800)
+  loading.value = false
+  finished.value = true
 }
 
 const goToDetail = (orderId: string) => {

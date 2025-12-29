@@ -32,7 +32,7 @@
           <van-image
             v-for="(image, index) in order.images"
             :key="index"
-            :src="image"
+            :src="normalizeUrl(image)"
             width="80"
             height="80"
             fit="cover"
@@ -42,11 +42,11 @@
       </van-cell-group>
 
       <!-- 审核信息 -->
-      <van-cell-group title="审核信息" v-if="order.status !== 'pending'">
+      <van-cell-group title="审核信息" v-if="order.status !== 'PendingApproval'">
         <van-cell 
           title="审核结果" 
-          :value="order.status === 'approved' ? '审核通过' : '审核驳回'"
-          :class="order.status === 'approved' ? 'text-success' : 'text-danger'"
+          :value="order.status === 'Rejected' ? '审核驳回' : '审核通过'"
+          :class="order.status === 'Rejected' ? 'text-danger' : 'text-success'"
         />
         <van-cell title="审核时间" :value="order.reviewTime" v-if="order.reviewTime" />
         <van-cell title="审核人" :value="order.reviewer" v-if="order.reviewer" />
@@ -54,7 +54,7 @@
       </van-cell-group>
 
       <!-- 处理信息 -->
-      <van-cell-group title="处理信息" v-if="order.status === 'processing' || order.status === 'completed'">
+      <van-cell-group title="处理信息" v-if="order.status === 'Handling' || order.status === 'Closed'">
         <van-cell title="处理时间" :value="order.handleTime" v-if="order.handleTime" />
         <van-cell title="处理人员" :value="order.handler" v-if="order.handler" />
         <van-cell title="处理说明" :value="order.handleDescription" v-if="order.handleDescription" />
@@ -66,7 +66,7 @@
           <van-image
             v-for="(image, index) in order.handleImages"
             :key="index"
-            :src="image"
+            :src="normalizeUrl(image)"
             width="80"
             height="80"
             fit="cover"
@@ -92,27 +92,52 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showImagePreview, showToast } from 'vant'
-import { useWorkOrderStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
+import { useUserStore } from '@/stores'
+import { complaintDetail } from '@/services/communityHome'
 
 const route = useRoute()
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 
-const order = ref<WorkOrder | null>(null)
+const order = ref<any | null>(null)
 
 onMounted(() => {
   loadOrder()
 })
 
-const loadOrder = () => {
+const loadOrder = async () => {
   const orderId = route.params.id as string
-  const foundOrder = workOrderStore.getWorkOrderById(orderId)
-  if (foundOrder) {
-    order.value = foundOrder
-  } else {
-    showToast('工单不存在')
+  const token = userStore.user?.token || ''
+  const res = await complaintDetail(token, orderId)
+  if (!res || res.result === false) {
+    showToast((res && res.msg) || '工单不存在')
     router.back()
+    return
+  }
+  const data = res.data || res
+  const c = data.complaint
+  const approvals = data.approvals || []
+  const handling = data.handling || []
+  const latestApproval = approvals[0]
+  const latestHandling = handling[0]
+  order.value = {
+    id: c?.Id || orderId,
+    type: 'complaint',
+    subtype: c?.Type || '',
+    building: c?.Building || '',
+    description: c?.Description || '',
+    phone: c?.ContactPhone || '',
+    images: (c?.Images || '').split(',').filter((x: string) => !!x),
+    status: c?.Status || '',
+    submitTime: c?.CreatedAt || '',
+    ownerName: c?.OwnerUserId || '',
+    reviewTime: latestApproval?.ReviewedAt || '',
+    reviewer: latestApproval?.AdminUserId || '',
+    reviewComment: latestApproval?.Reason || '',
+    handleTime: latestHandling?.HandledAt || '',
+    handler: latestHandling?.PropertyUserId || '',
+    handleDescription: latestHandling?.ResultDescription || '',
+    handleImages: latestHandling?.PhotoList || []
   }
 }
 
@@ -121,14 +146,14 @@ const onBack = () => {
 }
 
 const getStatusText = (status: string) => {
-  const statusMap = {
-    pending: '待审核',
-    approved: '审核通过',
-    rejected: '已驳回',
-    processing: '处理中',
-    completed: '已完成'
+  const statusMap: Record<string, string> = {
+    PendingApproval: '待审核',
+    Approved: '审核通过',
+    Rejected: '已驳回',
+    Handling: '处理中',
+    Closed: '已办结'
   }
-  return statusMap[status as keyof typeof statusMap]
+  return statusMap[status] || status
 }
 
 const getOrderTypeText = (type: string, subtype: string) => {
@@ -145,6 +170,13 @@ const previewImage = (images: string[], startPosition: number) => {
     startPosition,
     closeable: true
   })
+}
+
+const normalizeUrl = (u: string) => {
+  if (!u) return ''
+  if (/^https?:\/\//i.test(u)) return u
+  if (u.startsWith('/')) return 'https://ncys.nnkcy.com' + u
+  return u
 }
 
 const refreshOrder = () => {

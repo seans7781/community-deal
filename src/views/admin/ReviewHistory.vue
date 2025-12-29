@@ -35,8 +35,8 @@
                 <van-icon :name="getOrderIcon(order.type)" />
                 <span>{{ getOrderTypeText(order.type, order.subtype) }}</span>
               </div>
-              <div class="order-status" :class="order.status === 'approved' ? 'text-success' : 'text-danger'">
-                {{ order.status === 'approved' ? '审核通过' : '已驳回' }}
+              <div class="order-status" :class="order.status === 'approved' ? 'text-success' : order.status === 'closed' ? 'text-success' : 'text-danger'">
+                {{ order.status === 'approved' ? '审核通过' : order.status === 'closed' ? '已办结' : '已驳回' }}
               </div>
             </div>
             <div class="order-info">
@@ -70,26 +70,42 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useWorkOrderStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { adminHandledWorkorders, complaintDetail } from '@/services/communityHome'
 
 const router = useRouter()
-const workOrderStore = useWorkOrderStore()
+const userStore = useUserStore()
 
 const searchValue = ref('')
 const loading = ref(false)
 const finished = ref(false)
 const refreshing = ref(false)
+const remote = ref<any[]>([])
 
 const reviewedOrders = computed(() => {
-  return workOrderStore.workOrders
-    .filter(o => o.status === 'approved' || o.status === 'rejected')
-    .sort((a, b) => new Date(b.reviewTime || '').getTime() - new Date(a.reviewTime || '').getTime())
+  return remote.value
+    .map((c: any) => {
+      const s = String(c.Status || '').toLowerCase()
+      const status = s === 'approved' ? 'approved' : s === 'closed' ? 'closed' : 'rejected'
+      return {
+        id: c.Id || c.id || '',
+        type: String(c.RequestType || c.requestType || '').toUpperCase() === 'REPAIR' ? 'repair' : 'complaint',
+        subtype: c.Type || '',
+        building: c.Building || '',
+        description: c.Description || '',
+        reviewTime: c.ReviewedAt || c.ApprovedAt || c.UpdatedAt || c.CreatedAt || '',
+        reviewer: c.Reviewer || '',
+        reviewComment: c.Reason || '',
+        status
+      }
+    })
+    .sort((a: any, b: any) => new Date(b.reviewTime || '').getTime() - new Date(a.reviewTime || '').getTime())
 })
 
 const filteredOrders = computed(() => {
   if (!searchValue.value) return reviewedOrders.value
   const k = searchValue.value.toLowerCase()
-  return reviewedOrders.value.filter(o =>
+  return reviewedOrders.value.filter((o: any) =>
     o.id.toLowerCase().includes(k) ||
     o.building.toLowerCase().includes(k)
   )
@@ -101,19 +117,33 @@ const onBack = () => { router.push('/admin/home') }
 const onSearch = () => {}
 const onClear = () => { searchValue.value = '' }
 
-const onRefresh = () => {
+const onRefresh = async () => {
   refreshing.value = true
-  setTimeout(() => {
-    refreshing.value = false
-    finished.value = false
-  }, 800)
+  const token = userStore.user?.token || ''
+  const res = await adminHandledWorkorders(token)
+  const data = (res && (res.data || res)) as any
+  const list = Array.isArray(data) ? data : []
+  const enriched = await Promise.all(list.map(async (c: any) => {
+    const id = c.Id || c.id || ''
+    try {
+      const d = await complaintDetail(token, id)
+      const payload = (d && (d.data || d)) as any
+      const approvals = Array.isArray(payload?.approvals) ? payload.approvals : []
+      const latest = approvals[0]
+      const reviewedAt = latest?.ReviewedAt || c.ApprovedAt || c.UpdatedAt || c.CreatedAt || ''
+      return { ...c, ReviewedAt: reviewedAt }
+    } catch {
+      return { ...c }
+    }
+  }))
+  remote.value = enriched
+  refreshing.value = false
+  finished.value = true
 }
 
 const onLoad = () => {
-  setTimeout(() => {
-    loading.value = false
-    finished.value = true
-  }, 800)
+  loading.value = false
+  finished.value = true
 }
 
 const goToReviewDetail = (id: string) => {

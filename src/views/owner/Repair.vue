@@ -88,12 +88,11 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast } from 'vant'
 import type { UploaderBeforeRead } from 'vant/es/uploader/types'
-import { useUserStore, useWorkOrderStore } from '@/stores'
-import type { WorkOrder } from '@/stores'
+import { useUserStore } from '@/stores'
+import { complaintSubmit, uploadImage } from '@/services/communityHome'
 
 const router = useRouter()
 const userStore = useUserStore()
-const workOrderStore = useWorkOrderStore()
 
 const repairType = ref('')
 const building = ref('')
@@ -141,34 +140,34 @@ const onBack = () => {
   router.push('/owner/home')
 }
 
-const onSubmit = () => {
-  // 生成工单ID
-  const orderId = 'BX' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + 
-                  String(Math.floor(Math.random() * 1000)).padStart(3, '0')
-  
-  // 创建工单数据
-  const newOrder: WorkOrder = {
-    id: orderId,
-    type: 'repair',
-    subtype: repairType.value,
+const onSubmit = async () => {
+  const token = userStore.user?.token || ''
+  const uploaded: string[] = []
+  for (const f of fileList.value) {
+    const fileObj = f.file as File
+    if (fileObj) {
+      const r = await uploadImage('REPAIR', fileObj)
+      const d: any = r && (r.data || r)
+      const url = typeof d === 'string' ? d : (d?.url || (Array.isArray(d) ? d[0]?.url : '') || d?.ImageUrl || d?.imageUrl || '')
+      if (url) uploaded.push(url)
+    }
+  }
+  const payload = {
+    requestType: 'REPAIR' as const,
+    type: repairType.value,
     building: building.value,
     description: description.value,
-    phone: phone.value,
-    images: fileList.value.map(file => file.url || file.content),
-    status: 'pending',
-    submitTime: new Date().toLocaleString('zh-CN'),
-    ownerName: userStore.user?.name || '业主'
+    images: uploaded,
+    contactPhone: phone.value
   }
-
-  // 添加到store
-  workOrderStore.addWorkOrder(newOrder)
-
-  showSuccessToast('报修成功，等待管理员审核')
-  
-  // 返回首页
-  setTimeout(() => {
-    router.push('/owner/home')
-  }, 1500)
+  const res = await complaintSubmit(token, payload)
+  const ok = res && (res.result === true || res.complaintId)
+  if (ok) {
+    showSuccessToast('报修成功，等待管理员审核')
+    setTimeout(() => { router.push('/owner/home') }, 1200)
+  } else {
+    showFailToast((res && res.msg) || '提交失败')
+  }
 }
 </script>
 

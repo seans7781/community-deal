@@ -88,7 +88,7 @@
             <van-image
               v-for="(img, idx) in order.images.slice(0, 3)"
               :key="idx"
-              :src="img"
+              :src="normalizeUrl(img)"
               width="72"
               height="72"
               fit="cover"
@@ -107,44 +107,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ImageCarousel from '@/components/ImageCarousel.vue'
 import { useRouter } from 'vue-router'
-import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
+import { useUserStore } from '@/stores'
+import { announcementsPublic, complaintsTop100 } from '@/services/communityHome'
 
 const router = useRouter()
 const userStore = useUserStore()
-const workOrderStore = useWorkOrderStore()
+ 
 
-const chatStore = useChatStore()
+const announcementRemote = ref<any[]>([])
+const complaintRemote = ref<any[]>([])
 
-const adminNotices = computed(() => {
-  return chatStore.getApprovedMessages()
-    .filter(m => m.senderRole === 'admin')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
-})
+onMounted(async () => {
+  const ann = await announcementsPublic()
+  const annData = (ann && (ann.data || ann)) as any
+  announcementRemote.value = Array.isArray(annData) ? annData : []
 
-const announcementItems = computed(() => {
-  return adminNotices.value.map(n => n.content)
+  const comp = await complaintsTop100()
+  const compData = (comp && (comp.data || comp)) as any
+  complaintRemote.value = Array.isArray(compData) ? compData : []
 })
 
 const announcementItemsToShow = computed(() => {
-  return announcementItems.value.length > 0 ? announcementItems.value : ['暂无公告']
+  const items = announcementRemote.value
+    .map((it: any) => it.Content || it.content)
+    .filter((x: any) => !!x)
+  return items.length > 0 ? items : ['暂无公告']
 })
 
 const complaintOrders = computed(() => {
-  return workOrderStore.workOrders
-    .filter(order => order.type === 'complaint')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
+  return complaintRemote.value
+    .map((c: any) => ({
+      id: c.Id || c.id || String(Math.random()),
+      type: 'complaint',
+      subtype: c.Type || '',
+      building: c.Building || '',
+      description: c.Description || '',
+      images: ((c.Images || '') as string).split(',').filter(x => !!x),
+      status: c.Status || '',
+      submitTime: c.CreatedAt || '',
+    }))
+    .sort((a: any, b: any) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
 })
 
 const complaintFilter = ref<'all' | 'unprocessed' | 'processed'>('all')
 
 const complaintOrdersFiltered = computed(() => {
   if (complaintFilter.value === 'processed') {
-    return complaintOrders.value.filter(o => o.status === 'completed')
+    return complaintOrders.value.filter(o => o.status === 'Closed')
   } else if (complaintFilter.value === 'unprocessed') {
-    return complaintOrders.value.filter(o => o.status !== 'completed')
+    return complaintOrders.value.filter(o => o.status !== 'Closed')
   }
   return complaintOrders.value
 })
@@ -169,6 +183,13 @@ const getOrderTypeText = (type: string, subtype: string) => {
     complaint: '投诉'
   }
   return `${typeMap[type as keyof typeof typeMap]} - ${subtype}`
+}
+
+const normalizeUrl = (u: string) => {
+  if (!u) return ''
+  if (/^https?:\/\//i.test(u)) return u
+  if (u.startsWith('/')) return 'https://ncys.nnkcy.com' + u
+  return u
 }
 
 

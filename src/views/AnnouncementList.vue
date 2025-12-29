@@ -17,17 +17,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChatStore } from '@/stores'
+import { announcementsPublic } from '@/services/communityHome'
 
 const router = useRouter()
-const chatStore = useChatStore()
+const remote = ref<any[]>([])
+onMounted(async () => {
+  const res = await announcementsPublic()
+  const data = (res && (res.data || res)) as any
+  remote.value = Array.isArray(data) ? data : []
+})
 
 const approvedAnnouncements = computed(() => {
-  return chatStore.getApprovedMessages()
-    .filter(m => m.senderRole === 'admin')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
+  return remote.value
+    .map((it: any) => ({ id: it.Id || it.id || String(Math.random()), content: it.Content || it.content || '', submitTime: it.CreatedAt || it.createdAt || '', senderName: '管理员' }))
+    .sort((a: any, b: any) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
 })
 
 const onBack = () => router.back()

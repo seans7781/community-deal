@@ -4,12 +4,14 @@ import OwnerHome from '@/views/owner/HomeWithTabBar.vue'
 import OwnerRepair from '@/views/owner/Repair.vue'
 import OwnerComplaint from '@/views/owner/Complaint.vue'
 import OwnerOrderDetail from '@/views/owner/OrderDetail.vue'
+import OwnerMyOrders from '@/views/owner/MyOrders.vue'
 // 管理员端路由
 import AdminHome from '@/views/admin/HomeWithTabBar.vue'
 import AdminReviewList from '@/views/admin/ReviewList.vue'
 import AdminReview from '@/views/admin/Review.vue'
 import AdminReviewHistory from '@/views/admin/ReviewHistory.vue'
 import AdminCarouselManagement from '@/views/admin/CarouselManagement.vue'
+import AdminAnnouncementManagement from '@/views/admin/AnnouncementManagement.vue'
 import AdminSuggestionReviewList from '@/views/admin/SuggestionReviewList.vue'
 import AdminSuggestionReviewHistory from '@/views/admin/SuggestionReviewHistory.vue'
 // 物业端路由
@@ -17,10 +19,14 @@ import PropertyHome from '@/views/property/HomeWithTabBar.vue'
 import PropertyHandleList from '@/views/property/HandleList.vue'
 import PropertyHandle from '@/views/property/Handle.vue'
 import PropertyHandleHistory from '@/views/property/HandleHistory.vue'
+import PropertySuggestAssignedList from '@/views/property/SuggestionAssignedList.vue'
+import PropertySuggestHandledList from '@/views/property/SuggestionHandledList.vue'
+import PropertySuggestHandle from '@/views/property/SuggestionHandle.vue'
 import Profile from '@/views/Profile.vue'
 import RegisterOwner from '@/views/RegisterOwner.vue'
 import AnnouncementList from '@/views/AnnouncementList.vue'
 import SuggestionForm from '@/views/SuggestionForm.vue'
+import SuggestionDetail from '@/views/SuggestionDetail.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -66,6 +72,11 @@ const router = createRouter({
       name: 'owner-order-detail',
       component: OwnerOrderDetail
     },
+    {
+      path: '/owner/my-orders',
+      name: 'owner-my-orders',
+      component: OwnerMyOrders
+    },
     
     // 管理员端路由
     {
@@ -103,6 +114,11 @@ const router = createRouter({
       name: 'admin-carousel-management',
       component: AdminCarouselManagement
     },
+    {
+      path: '/admin/announcement-management',
+      name: 'admin-announcement-management',
+      component: AdminAnnouncementManagement
+    },
     // 物业端路由
     {
       path: '/property/home',
@@ -115,9 +131,24 @@ const router = createRouter({
       component: PropertyHandleList
     },
     {
+      path: '/property/suggest-assigned',
+      name: 'property-suggest-assigned',
+      component: PropertySuggestAssignedList
+    },
+    {
+      path: '/property/suggest-handled',
+      name: 'property-suggest-handled',
+      component: PropertySuggestHandledList
+    },
+    {
       path: '/property/handle/:id',
       name: 'property-handle',
       component: PropertyHandle
+    },
+    {
+      path: '/property/suggest-handle/:id',
+      name: 'property-suggest-handle',
+      component: PropertySuggestHandle
     },
     {
       path: '/property/handle-history',
@@ -135,6 +166,11 @@ const router = createRouter({
       path: '/suggestion/new',
       name: 'suggestion-new',
       component: SuggestionForm
+    },
+    {
+      path: '/suggestion/detail/:id',
+      name: 'suggestion-detail',
+      component: SuggestionDetail
     }
   ]
 })

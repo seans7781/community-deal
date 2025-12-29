@@ -16,8 +16,9 @@
     <van-cell-group>
       <van-cell title="账号信息" icon="user-o" is-link @click="showUserInfo" />
       <van-cell title="修改密码" icon="lock" is-link @click="showChangePassword" />
+      <van-cell v-if="userInfo.role === 'admin'" title="重置密码" icon="lock" is-link @click="showAdminReset" />
       <van-cell title="关于我们" icon="info-o" is-link @click="showAbout" />
-      <van-cell title="消息通知" icon="bell" is-link @click="goToMessages" :value="unreadCount > 0 ? unreadCount + '条未读' : ''" />
+      <!-- <van-cell title="消息通知" icon="bell" is-link @click="goToMessages" :value="unreadCount > 0 ? unreadCount + '条未读' : ''" /> -->
     </van-cell-group>
 
     <div v-if="userInfo.role === 'owner'" class="quick-actions">
@@ -67,8 +68,9 @@
           <span class="more-text" @click="showAllOrders">查看全部</span>
         </div>
         <div class="work-order-list">
+          <div class="section-header"><h3>投诉</h3></div>
           <div
-            v-for="order in myWorkOrders.slice(0, 3)"
+            v-for="order in myComplaints.slice(0, 3)"
             :key="order.id"
             class="work-order-item"
             @click="goToOrderDetail(order.id)"
@@ -77,42 +79,54 @@
               <div class="order-type">{{ getOrderTypeText(order.type, order.subtype) }}</div>
               <div class="order-time">{{ order.submitTime }}</div>
             </div>
-            <div class="order-status" :class="'status-' + order.status">
+            <div class="order-status" :class="statusClass(order.status)">
               {{ getStatusText(order.status) }}
             </div>
           </div>
-          <div v-if="myWorkOrders.length === 0" class="empty-orders">
-            暂无工单记录
+          <div v-if="myComplaints.length === 0" class="empty-orders">暂无投诉记录</div>
+
+          <div class="section-header" style="margin-top:12px"><h3>报修</h3></div>
+          <div
+            v-for="order in myRepairs.slice(0, 3)"
+            :key="order.id"
+            class="work-order-item"
+            @click="goToOrderDetail(order.id)"
+          >
+            <div class="order-info">
+              <div class="order-type">{{ getOrderTypeText(order.type, order.subtype) }}</div>
+              <div class="order-time">{{ order.submitTime }}</div>
+            </div>
+            <div class="order-status" :class="statusClass(order.status)">
+              {{ getStatusText(order.status) }}
+            </div>
           </div>
+          <div v-if="myRepairs.length === 0" class="empty-orders">暂无报修记录</div>
+
+          <div class="section-header" style="margin-top:12px"><h3>建议</h3></div>
+          <div
+            v-for="s in mySuggestions.slice(0, 3)"
+            :key="s.id"
+            class="work-order-item"
+            @click="goToSuggestionDetail(s.id)"
+          >
+            <div class="order-info">
+              <div class="order-type">建议 - {{ s.title }}</div>
+              <div class="order-time">{{ s.submitTime }}</div>
+            </div>
+            <div class="order-status" :class="statusClass(s.status)">
+              {{ getSuggestionStatusText(s.status) }}
+            </div>
+          </div>
+          <div v-if="mySuggestions.length === 0" class="empty-orders">暂无建议记录</div>
         </div>
       </div>
 
       
 
-      <van-dialog
-        v-model:show="showLatestOrderDialog"
-        title="最新工单处理情况"
-        confirm-button-text="查看详情"
-        @confirm="goToLatestOrder"
-      >
-        <div class="latest-order-content" v-if="latestOrder">
-          <div class="order-item">
-            <span class="label">工单编号：</span>
-            <span class="value">{{ latestOrder.id }}</span>
-          </div>
-          <div class="order-item">
-            <span class="label">处理阶段：</span>
-            <span class="value">{{ getStatusText(latestOrder.status) }}</span>
-          </div>
-          <div class="order-item">
-            <span class="label">处理备注：</span>
-            <span class="value">{{ getLatestOrderRemark() }}</span>
-          </div>
-        </div>
-      </van-dialog>
+      
     </div>
 
-    <div v-if="userInfo.role === 'admin'" class="admin-sections">
+    <!-- <div v-if="userInfo.role === 'admin'" class="admin-sections">
       <div class="section-header">
         <h3>公告管理</h3>
       </div>
@@ -142,7 +156,7 @@
       <van-dialog v-model:show="showEditDialog" title="编辑公告" show-cancel-button @confirm="onConfirmEdit">
         <van-field v-model="editContent" type="textarea" rows="2" autosize maxlength="100" show-word-limit />
       </van-dialog>
-    </div>
+    </div> -->
 
     <div class="logout-section">
       <van-button type="danger" size="large" @click="onLogout">
@@ -194,25 +208,61 @@
         />
       </div>
     </van-dialog>
+
+    <!-- 管理员重置密码弹窗 -->
+    <van-dialog
+      v-model:show="showAdminResetDialog"
+      title="管理员重置密码"
+      show-cancel-button
+      @confirm="onAdminResetPassword"
+    >
+      <div class="password-form">
+        <van-field
+          v-model="adminResetAccount"
+          label="用户名或手机号"
+          placeholder="请输入用户名或手机号"
+        />
+        <van-field
+          v-model="adminResetPwd1"
+          type="password"
+          label="新密码"
+          placeholder="请输入新密码"
+        />
+        <van-field
+          v-model="adminResetPwd2"
+          type="password"
+          label="确认密码"
+          placeholder="请再次输入新密码"
+        />
+      </div>
+    </van-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { showSuccessToast, showFailToast, showDialog } from 'vant'
-import { useUserStore, useWorkOrderStore, useChatStore } from '@/stores'
+import { showSuccessToast, showFailToast } from 'vant'
+import { useUserStore } from '@/stores'
+import { complaintMy } from '@/services/communityHome'
+ 
+import { suggestMy } from '@/services/communityHome'
+ 
+import { changePassword } from '@/services/communityHome'
+import { adminResetPassword } from '@/services/communityHome'
 
 const router = useRouter()
 const userStore = useUserStore()
-const workOrderStore = useWorkOrderStore()
-const chatStore = useChatStore()
 
 const showInfoDialog = ref(false)
 const showPasswordDialog = ref(false)
 const oldPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
+const showAdminResetDialog = ref(false)
+const adminResetAccount = ref('')
+const adminResetPwd1 = ref('')
+const adminResetPwd2 = ref('')
 
 const userInfo = computed(() => {
   const user = userStore.user
@@ -233,71 +283,64 @@ const userInfo = computed(() => {
   }
 })
 
-const unreadCount = ref(1)
+ 
 
-const myWorkOrders = computed(() => {
-  return workOrderStore.getOwnerWorkOrders(userStore.user?.name || '')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
+const remoteMyComplaints = ref<any[]>([])
+const remoteMyRepairs = ref<any[]>([])
+onMounted(async () => {
+  const token = userStore.user?.token || ''
+  const [rc, rr] = await Promise.all([
+    complaintMy(token, 'COMPLAINT'),
+    complaintMy(token, 'REPAIR')
+  ])
+  const dc = (rc && (rc.data || rc)) as any
+  const dr = (rr && (rr.data || rr)) as any
+  remoteMyComplaints.value = Array.isArray(dc) ? dc : []
+  remoteMyRepairs.value = Array.isArray(dr) ? dr : []
 })
 
-const latestOrder = computed(() => {
-  return myWorkOrders.value[0]
+const mapItems = (arr: any[], defaultType: 'complaint' | 'repair') => {
+  return arr.map((c: any) => ({
+    id: c.Id || c.id || '',
+    type: ((c.RequestType || '').toUpperCase() === 'REPAIR') ? 'repair' : ((c.RequestType || '').toUpperCase() === 'COMPLAINT') ? 'complaint' : defaultType,
+    subtype: c.Type || c.SubType || '',
+    building: c.Building || c.RoomNo || '',
+    description: c.Description || c.Desc || '',
+    submitTime: c.CreatedAt || c.SubmitTime || '',
+    status: c.Status || ''
+  }))
+}
+
+const myComplaints = computed(() => mapItems(remoteMyComplaints.value, 'complaint')
+  .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()))
+const myRepairs = computed(() => mapItems(remoteMyRepairs.value, 'repair')
+  .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()))
+ 
+const mySuggestionsRemote = ref<any[]>([])
+onMounted(async () => {
+  const token = userStore.user?.token || ''
+  const r = await suggestMy(token)
+  const d = (r && (r.data || r)) as any
+  mySuggestionsRemote.value = Array.isArray(d) ? d : []
 })
 
-const showLatestOrderDialog = ref(false)
+const mySuggestions = computed(() => mySuggestionsRemote.value
+  .map(it => ({
+    id: it.Id || it.id || '',
+    title: it.Title || it.title || '',
+    content: it.Content || it.content || '',
+    submitTime: it.CreatedAt || '',
+    status: it.Status || ''
+  }))
+  .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime()))
 
-onMounted(() => {
-  if (latestOrder.value && latestOrder.value.status !== 'pending') {
-    setTimeout(() => {
-      showLatestOrderDialog.value = true
-    }, 1000)
-  }
-})
+ 
 
-const newAnnouncement = ref('')
-const showEditDialog = ref(false)
-const editTargetId = ref('')
-const editContent = ref('')
+ 
 
-const adminAnnouncements = computed(() => {
-  return chatStore.getApprovedMessages()
-    .filter(m => m.senderRole === 'admin')
-    .sort((a, b) => new Date(b.submitTime).getTime() - new Date(a.submitTime).getTime())
-})
+onMounted(() => {})
 
-const canAdd = computed(() => newAnnouncement.value.trim().length > 0)
-
-const addAnnouncement = () => {
-  if (!canAdd.value || !userStore.user) return
-  const id = 'ANN' + Date.now().toString()
-  chatStore.addMessage({
-    id,
-    content: newAnnouncement.value.trim(),
-    senderName: userStore.user.name,
-    senderId: userStore.user.id,
-    senderRole: 'admin',
-    submitTime: new Date().toLocaleString('zh-CN'),
-    status: 'approved'
-  })
-  newAnnouncement.value = ''
-}
-
-const editAnnouncement = (item: any) => {
-  editTargetId.value = item.id
-  editContent.value = item.content
-  showEditDialog.value = true
-}
-
-const onConfirmEdit = () => {
-  if (editTargetId.value) {
-    chatStore.updateMessage(editTargetId.value, { content: editContent.value })
-  }
-  showEditDialog.value = false
-}
-
-const deleteAnnouncement = (id: string) => {
-  chatStore.deleteMessage(id)
-}
+ 
 
 const showUserInfo = () => {
   showInfoDialog.value = true
@@ -308,6 +351,13 @@ const showChangePassword = () => {
   newPassword.value = ''
   confirmPassword.value = ''
   showPasswordDialog.value = true
+}
+
+const showAdminReset = () => {
+  adminResetAccount.value = ''
+  adminResetPwd1.value = ''
+  adminResetPwd2.value = ''
+  showAdminResetDialog.value = true
 }
 
 const showAbout = () => {
@@ -330,9 +380,48 @@ const onChangePassword = () => {
     return
   }
   
-  // 模拟修改密码成功
-  showSuccessToast('密码修改成功')
-  showPasswordDialog.value = false
+  ;(async () => {
+    const token = userStore.user?.token || ''
+    const usernameOrPhone = userInfo.value.phone || ''
+    const res = await changePassword(token, { usernameOrPhone, oldpassword: oldPassword.value, newpassword: newPassword.value })
+    if (res && res.result !== false) {
+      showSuccessToast((res.msg) || '密码修改成功')
+      showPasswordDialog.value = false
+      oldPassword.value = ''
+      newPassword.value = ''
+      confirmPassword.value = ''
+    } else {
+      showFailToast((res && res.msg) || '修改失败')
+    }
+  })()
+}
+
+const onAdminResetPassword = () => {
+  if (!adminResetAccount.value || !adminResetPwd1.value || !adminResetPwd2.value) {
+    showFailToast('请填写完整信息')
+    return
+  }
+  if (adminResetPwd1.value !== adminResetPwd2.value) {
+    showFailToast('两次输入的密码不一致')
+    return
+  }
+  if (adminResetPwd1.value.length < 6) {
+    showFailToast('新密码长度不能少于6位')
+    return
+  }
+  ;(async () => {
+    const token = userStore.user?.token || ''
+    const res = await adminResetPassword(token, { usernameOrPhone: adminResetAccount.value.trim(), newpassword: adminResetPwd1.value })
+    if (res && res.result !== false) {
+      showSuccessToast((res.msg) || '重置成功')
+      showAdminResetDialog.value = false
+      adminResetAccount.value = ''
+      adminResetPwd1.value = ''
+      adminResetPwd2.value = ''
+    } else {
+      showFailToast((res && res.msg) || '重置失败')
+    }
+  })()
 }
 
 const onBack = () => {
@@ -348,22 +437,18 @@ const onLogout = () => {
 }
 
 const showAllOrders = () => {
-  showDialog({ message: '查看全部工单功能开发中...' })
+  router.push('/owner/my-orders')
 }
 
 const goToOrderDetail = (orderId: string) => {
   router.push(`/owner/order-detail/${orderId}`)
 }
 
-const goToLatestOrder = () => {
-  if (latestOrder.value) {
-    router.push(`/owner/order-detail/${latestOrder.value.id}`)
-  }
-}
+ 
 
-const goToMessages = () => {
-  showDialog({ message: '消息通知功能开发中...' })
-}
+// const goToMessages = () => {
+//   showDialog({ message: '消息通知功能开发中...' })
+// }
 
 const getOrderTypeText = (type: string, subtype: string) => {
   const typeMap = {
@@ -374,36 +459,46 @@ const getOrderTypeText = (type: string, subtype: string) => {
 }
 
 const getStatusText = (status: string) => {
-  const statusMap = {
-    pending: '待审核',
-    approved: '审核通过',
-    rejected: '已驳回',
-    processing: '处理中',
-    completed: '已完成'
+  const statusMap: Record<string, string> = {
+    PendingApproval: '待审核',
+    Approved: '审核通过',
+    Rejected: '已驳回',
+    Handling: '处理中',
+    Closed: '已办结'
   }
-  return statusMap[status as keyof typeof statusMap]
+  return statusMap[status] || status
 }
 
-const getLatestOrderRemark = () => {
-  if (!latestOrder.value) return ''
-  
-  switch (latestOrder.value.status) {
-    case 'approved':
-      return '您的工单已通过审核，正在安排处理'
-    case 'rejected':
-      return latestOrder.value.reviewComment || '工单被驳回，请查看详情'
-    case 'processing':
-      return '您的工单正在处理中'
-    case 'completed':
-      return '您的工单已处理完成'
-    default:
-      return '工单状态更新'
+const statusClass = (status: string) => {
+  const map: Record<string, string> = {
+    PendingApproval: 'status-pending',
+    Approved: 'status-approved',
+    Rejected: 'status-rejected',
+    Handling: 'status-processing',
+    Closed: 'status-completed',
+    Resolved: 'status-completed'
   }
+  return map[status] || 'status-pending'
 }
+
+ 
+
+const getSuggestionStatusText = (s: string) => {
+  const map: Record<string, string> = {
+    PendingApproval: '待审核',
+    Approved: '审核通过',
+    Rejected: '已驳回',
+    Resolved: '已处置'
+  }
+  return map[s] || s
+}
+
+ 
 
 const goToRepairPage = () => { router.push('/owner/repair') }
 const goToComplaintPage = () => { router.push('/owner/complaint') }
 const goToSuggestionPage = () => { router.push('/suggestion/new') }
+const goToSuggestionDetail = (id: string) => { router.push(`/suggestion/detail/${id}`) }
 </script>
 
 <style scoped>
