@@ -35,23 +35,6 @@
         </div>
       </van-cell-group>
 
-      <van-cell-group v-if="order.status === 'Closed' && (order.handlingTime || order.handlingNote || order.handlingResult || (order.handlingPhotos && order.handlingPhotos.length > 0))" title="物业处置">
-        <van-cell v-if="order.handlingTime" title="处置时间" :value="order.handlingTime" />
-        <van-cell v-if="order.handlingNote" title="处置说明" :value="order.handlingNote" />
-        <van-cell v-if="order.handlingResult" title="处置结果" :value="order.handlingResult" />
-        <div class="image-list" v-if="order.handlingPhotos && order.handlingPhotos.length > 0">
-          <van-image
-            v-for="(image, index) in order.handlingPhotos"
-            :key="index"
-            :src="image"
-            width="80"
-            height="80"
-            fit="cover"
-            @click="previewImage(order.handlingPhotos, index)"
-          />
-        </div>
-      </van-cell-group>
-
       <div class="review-section">
         <van-field
           v-model="reviewComment"
@@ -123,9 +106,7 @@ const loadOrder = async () => {
   const data = res.data || res
   const c = data.complaint
   const approvals = data.approvals || []
-  const handling = data.handling || []
   const latestApproval = approvals[0]
-  const latestHandling = handling[0] || null
   order.value = {
     id: c?.Id || orderId,
     type: 'complaint',
@@ -137,16 +118,7 @@ const loadOrder = async () => {
     submitTime: c?.CreatedAt || '',
     reviewer: latestApproval?.AdminUserId || '',
     reviewComment: latestApproval?.Reason || '',
-    reviewTime: latestApproval?.ReviewedAt || '',
-    handlingTime: latestHandling?.HandledAt || latestHandling?.Time || '',
-    handlingNote: latestHandling?.HandleDescription || latestHandling?.Note || '',
-    handlingResult: latestHandling?.ResultDescription || '',
-    handlingPhotos: (() => {
-      const arr = latestHandling?.Photos || latestHandling?.Photots || []
-      if (Array.isArray(arr)) return arr.filter((x: string) => !!x)
-      if (typeof arr === 'string') return arr.split(',').filter((x: string) => !!x)
-      return []
-    })()
+    reviewTime: latestApproval?.ReviewedAt || ''
   }
   reviewComment.value = latestApproval?.Reason || ''
 }

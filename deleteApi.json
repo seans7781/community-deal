@@ -1,0 +1,407 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/CommunityHome/AdminDeletableComplaints": {
+      "get": {
+        "summary": "获取可删报修",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "requestType",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "REPAIR",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "82c8b3e005e547578a09c62e49ce928e0a54ddb5",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "RequestType": {
+                            "type": "string"
+                          },
+                          "Type": {
+                            "type": "string"
+                          },
+                          "Building": {
+                            "type": "string"
+                          },
+                          "Description": {
+                            "type": "string"
+                          },
+                          "Images": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "RequestType",
+                          "Type",
+                          "Building",
+                          "Description",
+                          "Images",
+                          "ContactPhone",
+                          "Status",
+                          "CreatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "1d382b30307d4e2eb0379653b849d445",
+                      "RequestType": "REPAIR",
+                      "Type": "公共区域维修",
+                      "Building": "2栋1单元600",
+                      "Description": "路灯不亮，不亮，不亮",
+                      "Images": "https://ncys.nnkcy.com/wyapi/Attachment/Community-Home/REPAIR/10810ddea0c241158cd22918f73b3d3d.jpg",
+                      "ContactPhone": "18176274422",
+                      "Status": "Approved",
+                      "CreatedAt": "2025-12-29T16:48:46.46"
+                    },
+                    {
+                      "Id": "0e57639f5e34485fab7ff81295d79d8c",
+                      "RequestType": "REPAIR",
+                      "Type": "其他",
+                      "Building": "A001",
+                      "Description": "楼栋门口有一块瓷砖已破裂",
+                      "Images": "https://ncys.nnkcy.com/wyapi/Attachment/Community-Home/REPAIR/8a06425b156346a9b242a1c31acd3d54.png",
+                      "ContactPhone": "19163816431",
+                      "Status": "Closed",
+                      "CreatedAt": "2025-12-24T11:38:02.593"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminDeleteComplaint": {
+      "post": {
+        "summary": "删除工单",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "82c8b3e005e547578a09c62e49ce928e0a54ddb5",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "example": {
+                "id": "1d382b30307d4e2eb0379653b849d445"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "删除成功"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminDeletableSuggestions": {
+      "get": {
+        "summary": "获取可删建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "82c8b3e005e547578a09c62e49ce928e0a54ddb5",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Id": {
+                            "type": "string"
+                          },
+                          "OwnerUserId": {
+                            "type": "string"
+                          },
+                          "Title": {
+                            "type": "string"
+                          },
+                          "Content": {
+                            "type": "string"
+                          },
+                          "Target": {
+                            "type": "string"
+                          },
+                          "ContactPhone": {
+                            "type": "string"
+                          },
+                          "Status": {
+                            "type": "string"
+                          },
+                          "CreatedAt": {
+                            "type": "string"
+                          },
+                          "UpdatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "Id",
+                          "OwnerUserId",
+                          "Title",
+                          "Content",
+                          "Target",
+                          "ContactPhone",
+                          "Status",
+                          "CreatedAt",
+                          "UpdatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "data": [
+                    {
+                      "Id": "5b617a7a282941e887210ef46d0d74ac",
+                      "OwnerUserId": "9812157b7f6b4787942e83bfc23a5e81",
+                      "Title": "建议更换路灯",
+                      "Content": "30栋路灯很暗，建议更换。",
+                      "Target": "PROPERTY",
+                      "ContactPhone": "18176274422",
+                      "Status": "Resolved",
+                      "CreatedAt": "2025-12-24T19:09:45.11",
+                      "UpdatedAt": "2025-12-24T19:27:36.223"
+                    },
+                    {
+                      "Id": "837937feaf854d819f94a3cbf4f1efb4",
+                      "OwnerUserId": "de868f94380e4f9088c7822da77ec5a3",
+                      "Title": "增加健身器材",
+                      "Content": "小区内部的健身器材种类不够多",
+                      "Target": "PROPERTY",
+                      "ContactPhone": "19163816431",
+                      "Status": "Resolved",
+                      "CreatedAt": "2025-12-24T11:39:58.31",
+                      "UpdatedAt": "2025-12-24T19:27:58.987"
+                    },
+                    {
+                      "Id": "1b1e2378f02e4afeb6662aa4856d8bb0",
+                      "OwnerUserId": "730df1017fc34f90a5d9e151aa093c7f",
+                      "Title": "其他",
+                      "Content": "保安亭要打起精神来是",
+                      "Target": "PROPERTY",
+                      "ContactPhone": "19163816341",
+                      "Status": "Resolved",
+                      "CreatedAt": "2025-12-24T11:21:59.25",
+                      "UpdatedAt": "2025-12-24T11:23:07.82"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/CommunityHome/AdminDeleteSuggestion": {
+      "post": {
+        "summary": "删除建议",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "82c8b3e005e547578a09c62e49ce928e0a54ddb5",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "example": {
+                "id": "1b1e2378f02e4afeb6662aa4856d8bb0"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "boolean"
+                    },
+                    "msg": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "result",
+                    "msg"
+                  ]
+                },
+                "example": {
+                  "result": true,
+                  "msg": "删除成功"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

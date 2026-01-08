@@ -8,9 +8,10 @@
     <div class="login-form">
       <van-field
         v-model="username"
-        label="手机号"
-        placeholder="请输入手机号"
-        type="tel"
+        label="账号"
+        placeholder="请输入手机号或用户名"
+        type="text"
+        autocapitalize="off"
       />
       <van-field
         v-model="password"
@@ -39,6 +40,14 @@
         @click="goToRegister"
       >
         注册业主账号
+      </van-button>
+      <van-button
+        type="warning"
+        size="large"
+        class="home-btn"
+        @click="goHome"
+      >
+        返回首页大厅
       </van-button>
     </div>
 
@@ -95,6 +104,10 @@ const onLogin = async () => {
   }
 }
 
+const goHome = () => {
+  router.push('/owner/home')
+}
+
  
 
 const goToRegister = () => {
@@ -143,6 +156,7 @@ const goToRegister = () => {
 }
 
 .register-btn { margin-top: 12px; }
+.home-btn { margin-top: 12px; }
 
 .forgot-password {
   text-align: right;

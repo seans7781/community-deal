@@ -53,8 +53,15 @@
                 <span class="value description">{{ order.reviewComment }}</span>
               </div>
             </div>
-            <div class="order-action">
+            <div class="order-action" @click.stop>
               <van-button type="primary" size="small">查看详情</van-button>
+              <van-button
+                v-if="order.status === 'approved' || order.status === 'closed'"
+                type="danger"
+                size="small"
+                style="margin-left:8px"
+                @click.stop.prevent="onDeleteOrder(order.id)"
+              >删除</van-button>
             </div>
           </div>
         </van-list>
@@ -71,7 +78,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import { adminHandledWorkorders, complaintDetail } from '@/services/communityHome'
+import { adminHandledWorkorders, complaintDetail, adminDeleteComplaint } from '@/services/communityHome'
+import { showConfirmDialog, showSuccessToast, showFailToast } from 'vant'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -157,6 +165,20 @@ const getOrderIcon = (type: string) => {
 const getOrderTypeText = (type: string, subtype: string) => {
   const typeMap = { repair: '报修', complaint: '投诉' }
   return `${typeMap[type as keyof typeof typeMap]} - ${subtype}`
+}
+
+const onDeleteOrder = async (id: string) => {
+  try {
+    await showConfirmDialog({ title: '确认删除', message: '删除后将不可恢复' })
+  } catch { return }
+  const token = userStore.user?.token || ''
+  const res = await adminDeleteComplaint(token, id)
+  if (res && res.result !== false) {
+    remote.value = remote.value.filter((c: any) => (c.Id || c.id || '') !== id)
+    showSuccessToast(res.msg || '删除成功')
+  } else {
+    showFailToast((res && res.msg) || '删除失败')
+  }
 }
 </script>
 

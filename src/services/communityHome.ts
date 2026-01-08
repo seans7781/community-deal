@@ -197,3 +197,13 @@ export async function adminResetPassword(token: string, payload: { usernameOrPho
   const res = await request('/api/CommunityHome/AdminResetPassword', { method: 'POST', token, body: payload })
   return res?.data || null
 }
+
+export async function adminDeleteComplaint(token: string, complaintId: string) {
+  const res = await request('/api/CommunityHome/AdminDeleteComplaint', { method: 'POST', token, body: { complaintId } })
+  return res?.data || null
+}
+
+export async function adminDeleteSuggestion(token: string, suggestionId: string) {
+  const res = await request('/api/CommunityHome/AdminDeleteSuggestion', { method: 'POST', token, body: { id: suggestionId } })
+  return res?.data || null
+}

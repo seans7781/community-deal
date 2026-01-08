@@ -23,6 +23,12 @@
           <span class="status-tag" :class="item.status === 'approved' ? 'tag-approved' : 'tag-rejected'">
             {{ item.status === 'approved' ? '审核通过' : '已驳回' }}
           </span>
+          <van-button 
+            type="danger" 
+            size="small" 
+            style="margin-left: 8px"
+            @click.stop="onDeleteSuggestion(item.id)"
+          >删除</van-button>
         </div>
       </div>
       <div v-if="reviewedSuggestions.length === 0" class="empty-state">
@@ -36,7 +42,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import { adminHandledSuggestions } from '@/services/communityHome'
+import { adminHandledSuggestions, adminDeleteSuggestion } from '@/services/communityHome'
+import { showConfirmDialog, showSuccessToast, showFailToast } from 'vant'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -60,6 +67,21 @@ const reviewedSuggestions = computed(() => {
 })
 
 const roleText = (r: 'owner' | 'property') => r === 'owner' ? '业主' : '物业'
+
+const onDeleteSuggestion = async (id: string) => {
+  try {
+    await showConfirmDialog({ title: '确认删除', message: '删除后将不可恢复' })
+  } catch { return }
+
+  const token = userStore.user?.token || ''
+  const res = await adminDeleteSuggestion(token, id)
+  if (res && res.result !== false) {
+    showSuccessToast(res.msg || '删除成功')
+    remote.value = remote.value.filter((it: any) => (it.Id || it.id) !== id)
+  } else {
+    showFailToast((res && res.msg) || '删除失败')
+  }
+}
 
 const onBack = () => { router.push('/admin/home') }
 
